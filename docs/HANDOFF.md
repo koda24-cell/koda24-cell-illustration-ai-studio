@@ -26,3 +26,9 @@
 - 許可リストは空。**生成用モデルの指定待ち**。指定後に fetch-models → produce で実生成を検証する。
 - Diffusers 経由の全生成機能は未検証（🟡）。Checkpoint 指定時は pipeline_config（構成ファイル）も必須依存として指定が必要。
 - 2026-11-26 追記: PR #1・#2 マージ済み。produce（自己診断）・再開・Pages 公開を Actions で確認（VERIFICATION.md）。残りはモデル指定後の実生成検証。
+
+### 2026-11-27 担当: Claude
+- Obsession (Illustrious-XL) v-pred_v1.1 と SDXL 構成ファイル（ユーザー承認の必須依存）を許可リストに登録し、実生成を検証（VERIFICATION.md）。
+- CPU 実測: txt2img 約40分 / inpaint 約13分 / img2img 約20分 / outpaint 約58分。ピークメモリ約15GB → produce でスワップ12GB追加済み。
+- ライセンス注意: Civitai フラグは allowCommercialUse=[RentCivit] のみ（生成画像の販売を含まない）。商用作品での使用可否はユーザー確認待ち。
+- 次: ユーザーが LoRA / ControlNet / IP-Adapter 等を指定したら、それらの実機検証。評価モデル（CLIP 等）は未指定。

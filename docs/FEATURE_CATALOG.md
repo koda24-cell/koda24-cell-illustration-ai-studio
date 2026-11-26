@@ -9,15 +9,15 @@
 ## プリミティブ操作（op）
 | 機能 | op | 必要なモデル（許可リスト） | 必要な入力 | 状態 |
 |---|---|---|---|---|
-| テキストから画像生成 | `txt2img` | checkpoint ＋ pipeline_config（構成ファイル） | prompt | 🟡 |
-| 参考画像からの生成 | `img2img` | 同上 | `init`（images:/stage:/run:）, `denoise` | 🟡 |
+| テキストから画像生成 | `txt2img` | checkpoint ＋ pipeline_config（構成ファイル） | prompt | ✅（Obsession, 約40分/枚） |
+| 参考画像からの生成 | `img2img` | 同上 | `init`（images:/stage:/run:）, `denoise` | ✅（約20分。denoise 0.45 では色変更が弱い） |
 | 既存イラストの編集 | `img2img` / `inpaint` | 同上 | `init` ＋ prompt | 🟡 |
-| 部分修正 Inpaint | `inpaint` | 同上（inpaint 専用 checkpoint があれば望ましい） | `init`, `mask`（`{rect:[x,y,w,h]}` 比率 or images:） | 🟡 |
-| 描画範囲の拡張 Outpaint | `outpaint` | 同上 | `init`, `outpaint:{left,top,right,bottom}`(px) | 🟡（余白生成とマスクは ✅） |
+| 部分修正 Inpaint | `inpaint` | 同上（inpaint 専用 checkpoint があれば望ましい） | `init`, `mask`（`{rect:[x,y,w,h]}` 比率 or images:） | ✅（約13分） |
+| 描画範囲の拡張 Outpaint | `outpaint` | 同上 | `init`, `outpaint:{left,top,right,bottom}`(px) | ✅（約58分） |
 | 高解像度化（モデル不要） | `upscale` | なし（Lanczos） | `init`, `scale` | ✅ |
 | 高解像度化（Hires 再描画） | `hires_upscale` | checkpoint | `init`, `scale`, `denoise`≈0.3 | 🟡 |
 | 高解像度化（専用モデル） | `upscale_model` | upscaler（ESRGAN系 safetensors, spandrel） | `init`, `upscaler` | 🟡 |
-| 背景透過 | `remove_bg` | なし（外周連結の単色背景キー） | `init`, `tolerance` | ✅（単色背景向け。複雑背景は限界あり） |
+| 背景透過 | `remove_bg` | なし（外周連結の単色背景キー） | `init`, `tolerance` | ✅（実イラストで確認。白縁・接地影が残る） |
 | 背景の変更 | `replace_bg` | なし（合成）/ 新背景生成時は checkpoint | `init`(透過画像), `background` | ✅（合成部分） |
 | 線画の抽出 | `lineart_extract` | なし（XDoG） | `init` | ✅ |
 | ControlNet 入力作成 | `control_from` / `controlnet.preprocess` | なし（canny / lineart） | 画像 | ✅ |
@@ -26,13 +26,13 @@
 | VAE 差し替え | `vae: id` | vae | — | 🟡 |
 | ControlNet 構図・ポーズ制御 | `controlnet:{id,image,scale,preprocess}` | controlnet（＋単一ファイルなら `config_entry`） | 制御画像（role: control） | 🟡 |
 | IP-Adapter 参考特徴反映 | `ip_adapter:{id,image_encoder,image,scale}` | ip_adapter ＋ image_encoder | 参考画像（role: reference） | 🟡 |
-| 複数候補の生成 | `limits.candidates_per_round` | — | — | ✅（procedural で確認） |
+| 複数候補の生成 | `limits.candidates_per_round` | — | — | ✅（Obsession で確認） |
 
 ## 制作目的別レシピ（recipe.type）
 | 機能 | type | 展開されるステージ | 追加で使うと良いモデル | 状態 |
 |---|---|---|---|---|
 | キャラクター立ち絵 | `character_standing` | txt2img →（hires）→ 背景透過 | — | 🟡 |
-| 表情差分 | `expression_variants` | 顔矩形を inpaint（同一seed・一貫性評価） | inpaint 向け checkpoint | 🟡 |
+| 表情差分 | `expression_variants` | 顔矩形を inpaint（同一seed・一貫性評価） | inpaint 向け checkpoint | ✅（同等ステージで実機確認） |
 | 衣装差分 | `outfit_variants` | 体の矩形を inpaint | — | 🟡 |
 | ポーズ差分 | `pose_variants` | ControlNet あり: 制御画像で txt2img(+IP-Adapter) / なし: img2img（自由度低） | controlnet(openpose 等), ip_adapter | 🟡 |
 | キャラクター三面図 | `turnaround` | 横長 txt2img（＋三面図テンプレの ControlNet） | controlnet | 🟡（モデル依存が大きい） |
