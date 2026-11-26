@@ -89,7 +89,7 @@ class DiffusersBackend:
         from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline
 
         ckpt = self.al.require_model(p["model"], {"checkpoint"})
-        key = (ckpt.id, p.get("vae"), p.get("pipeline_config"))
+        key = (ckpt.id, p.get("vae"), p.get("pipeline_config"), p.get("dtype"))
         if self._base is not None and self._base_key == key:
             return self._base
         t0 = time.time()
@@ -97,7 +97,9 @@ class DiffusersBackend:
         cfg = self._config_dir(arch, p.get("pipeline_config"))
         (path,) = fetch.verify_cached(ckpt)
         cls = StableDiffusionXLPipeline if arch == "sdxl" else StableDiffusionPipeline
-        kw: dict[str, Any] = dict(config=cfg, local_files_only=True, torch_dtype=torch.float32)
+        dtype = {"float32": torch.float32, "bfloat16": torch.bfloat16}[p.get("dtype") or "float32"]
+        self._dtype = dtype
+        kw: dict[str, Any] = dict(config=cfg, local_files_only=True, torch_dtype=dtype)
         if arch == "sd15":
             kw.update(safety_checker=None, requires_safety_checker=False, load_safety_checker=False)
         if p.get("vae"):
@@ -105,13 +107,20 @@ class DiffusersBackend:
             ve = self.al.require_model(p["vae"], {"vae"})
             (vpath,) = fetch.verify_cached(ve)
             kw["vae"] = AutoencoderKL.from_single_file(str(vpath), config=cfg, subfolder="vae",
-                                                       local_files_only=True, torch_dtype=torch.float32)
+                                                       local_files_only=True, torch_dtype=dtype)
         pipe = cls.from_single_file(str(path), **kw)
         pipe.set_progress_bar_config(disable=True)
         try:
             pipe.enable_attention_slicing()
+            if arch == "sdxl" and p.get("vae_tiling", True):
+                pipe.enable_vae_tiling()  # CPU メモリ節約
         except Exception:  # noqa: BLE001
             pass
+        # v-prediction / zero terminal SNR（Illustrious v-pred 系など）。台帳・許可リストの記載かジョブ指定に従う
+        self._pred = {
+            "prediction_type": p.get("prediction_type") or ckpt.raw.get("prediction_type"),
+            "zero_snr": p.get("zero_terminal_snr", ckpt.raw.get("zero_terminal_snr")),
+        }
         self._base, self._base_key, self._arch = pipe, key, arch
         self._loaded_loras, self._ip_loaded = {}, None
         for emb in p.get("embeddings") or []:
@@ -157,7 +166,7 @@ class DiffusersBackend:
         e = self.al.require_model(cn_id, {"controlnet"})
         if len(e.files) > 1:  # Diffusers 形式（config.json + 重み）
             m = ControlNetModel.from_pretrained(str(fetch.materialize_dir(e)), local_files_only=True,
-                                                torch_dtype=torch.float32)
+                                                torch_dtype=getattr(self, "_dtype", torch.float32))
         else:
             (path,) = fetch.verify_cached(e)
             cfg_id = e.raw.get("config_entry")
@@ -191,13 +200,23 @@ class DiffusersBackend:
         self._ip_loaded = key
 
     def _scheduler(self, pipe, name: str | None):
-        if not name:
-            return
-        if name not in SCHEDULERS:
-            raise StudioError("BAD_INPUT", f"scheduler は {sorted(SCHEDULERS)}")
         import diffusers
-        cls_name, extra = SCHEDULERS[name]
-        pipe.scheduler = getattr(diffusers, cls_name).from_config(pipe.scheduler.config, **extra)
+        extra: dict[str, Any] = {}
+        pred = getattr(self, "_pred", {}) or {}
+        if pred.get("prediction_type"):
+            extra["prediction_type"] = pred["prediction_type"]
+        if pred.get("zero_snr"):
+            extra.update(rescale_betas_zero_snr=True, timestep_spacing="trailing")
+        if name:
+            if name not in SCHEDULERS:
+                raise StudioError("BAD_INPUT", f"scheduler は {sorted(SCHEDULERS)}")
+            cls_name, sx = SCHEDULERS[name]
+            cls = getattr(diffusers, cls_name)
+            extra = {**sx, **extra}
+        else:
+            cls = type(pipe.scheduler)
+        if extra or name:
+            pipe.scheduler = cls.from_config(pipe.scheduler.config, **extra)
 
     # ---------- 実行 ----------
     def run(self, op: str, params: dict[str, Any], inputs: dict[str, Image.Image]) -> Image.Image:
@@ -227,11 +246,15 @@ class DiffusersBackend:
         self._scheduler(pipe, params.get("scheduler"))
         if params.get("ip_adapter"):
             self._ip_adapter(pipe, params["ip_adapter"])
+        if cn and getattr(self, "_dtype", None) is not None:
+            pipe.controlnet.to(self._dtype)
 
         g = torch.Generator("cpu").manual_seed(int(params["seed"]))
         kw: dict[str, Any] = dict(prompt=params.get("prompt", ""), negative_prompt=params.get("negative_prompt") or None,
                                   num_inference_steps=int(params.get("steps", 20)),
                                   guidance_scale=float(params.get("cfg", 7.0)), generator=g)
+        if params.get("guidance_rescale") is not None:
+            kw["guidance_rescale"] = float(params["guidance_rescale"])
         if params.get("clip_skip"):
             kw["clip_skip"] = int(params["clip_skip"])
         if op == "txt2img":
@@ -252,7 +275,11 @@ class DiffusersBackend:
         if params.get("ip_adapter"):
             kw["ip_adapter_image"] = inputs["ip_image"].convert("RGB")
         with torch.inference_mode():
-            return pipe(**kw).images[0]
+            img = pipe(**kw).images[0]
+        import numpy as np
+        if not np.isfinite(np.asarray(img, dtype=np.float32)).all() or np.asarray(img).std() < 1:
+            raise StudioError("BAD_OUTPUT", "生成結果が空/単色（設定不整合の可能性: v-pred 指定や dtype を確認）")
+        return img
 
 
 def upscale_with_model(al: Allowlist, model_id: str, img: Image.Image) -> Image.Image:

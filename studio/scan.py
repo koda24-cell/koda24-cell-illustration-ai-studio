@@ -60,31 +60,93 @@ def require_clamav() -> dict[str, Any]:
     return info
 
 
+# ClamAV は 1 ファイル約 4GB を超えると全体を検査できない（上限超過を「検査済み」と誤認しない）。
+CHUNK_THRESHOLD = int(os.environ.get("STUDIO_SCAN_CHUNK_THRESHOLD", str(3 * 1024**3)))
+CHUNK_SIZE = int(os.environ.get("STUDIO_SCAN_CHUNK_SIZE", str(1024**3)))
+CHUNK_OVERLAP = 4 * 1024 * 1024
+CLAM_LIMITS = ["--max-filesize=4000M", "--max-scansize=4000M", "--alert-exceeds-max=yes"]
+
+
+def _run_clamscan(paths: list[Path]) -> subprocess.CompletedProcess:
+    cmd = ["clamscan", "--recursive", "--stdout", "--no-summary", "--infected", "--scan-archive=yes",
+           *CLAM_LIMITS, *[str(p) for p in paths]]
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+
+def _chunks(path: Path, workdir: Path):
+    """大きなファイルを重なり付きの分割片として順に書き出す（1片ずつ生成・削除）。"""
+    size = path.stat().st_size
+    workdir.mkdir(parents=True, exist_ok=True)
+    start, idx = 0, 0
+    with open(path, "rb") as f:
+        while start < size:
+            f.seek(start)
+            length = min(CHUNK_SIZE + CHUNK_OVERLAP, size - start)
+            cp = workdir / f"{path.name}.part{idx:04d}"
+            with open(cp, "wb") as o:
+                remaining = length
+                while remaining:
+                    b = f.read(min(remaining, 16 * 1024 * 1024))
+                    if not b:
+                        break
+                    o.write(b)
+                    remaining -= len(b)
+            yield idx, start, length, cp
+            start += CHUNK_SIZE
+            idx += 1
+
+
 def clamscan(paths: list[Path], log_path: Path | None = None) -> dict[str, Any]:
-    """clamscan を実行。exit 0=感染なし, 1=検出, 2=エラー。0 以外は全て失敗扱い。"""
+    """clamscan を実行。exit 0=感染なし, 1=検出, 2=エラー。0 以外は全て失敗扱い。
+    約3GB超のファイルは 1GB（4MB重なり）単位の分割片をすべて検査する（method=chunked として記録）。"""
     info = require_clamav()
-    cmd = ["clamscan", "--recursive", "--stdout", "--no-summary", "--infected",
-           "--scan-archive=yes", "--max-filesize=8000M", "--max-scansize=8000M",
-           "--alert-exceeds-max=no", *[str(p) for p in paths]]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    detections = [ln for ln in proc.stdout.splitlines() if ln.rstrip().endswith("FOUND")]
+    small = [p for p in paths if not (p.is_file() and p.stat().st_size > CHUNK_THRESHOLD)]
+    large = [p for p in paths if p not in small]
+    out_log: list[str] = []
+    detections: list[str] = []
+    codes: list[int] = []
+    methods: list[dict[str, Any]] = []
+    if small:
+        proc = _run_clamscan(small)
+        codes.append(proc.returncode)
+        out_log.append(proc.stdout + "\n--- stderr ---\n" + proc.stderr)
+        detections += [ln for ln in proc.stdout.splitlines() if ln.rstrip().endswith("FOUND")]
+        methods += [{"path": str(p), "method": "whole"} for p in small]
+    for p in large:
+        wd = p.parent / f".scan-chunks-{p.name}"
+        n = 0
+        for idx, start, length, cp in _chunks(p, wd):
+            proc = _run_clamscan([cp])
+            codes.append(proc.returncode)
+            out_log.append(f"[chunk {idx} offset={start} len={length}] rc={proc.returncode}\n{proc.stdout}{proc.stderr}")
+            detections += [ln for ln in proc.stdout.splitlines() if ln.rstrip().endswith("FOUND")]
+            cp.unlink()
+            n += 1
+            if proc.returncode != 0:
+                break
+        shutil.rmtree(wd, ignore_errors=True)
+        methods.append({"path": str(p), "method": "chunked", "chunks": n, "chunk_size": CHUNK_SIZE,
+                        "overlap": CHUNK_OVERLAP,
+                        "note": "ClamAV の1ファイル上限(約4GB)のため分割検査。分割片をまたぐシグネチャは重なり分のみ考慮"})
     result = {
         "scanner": "clamscan",
         "scanner_version": info.get("version_string"),
         "db_age_hours": info.get("db_age_hours"),
-        "command": " ".join(cmd[:9]) + " <files>",
-        "exit_code": proc.returncode,
+        "options": CLAM_LIMITS,
+        "exit_codes": sorted(set(codes)),
+        "exit_code": max(codes) if codes else 2,
         "detections": detections,
         "detection_count": len(detections),
+        "methods": methods,
         "scanned_at": now_iso(),
         "targets": [{"path": str(p), "sha256": sha256_file(p) if p.is_file() else None} for p in paths],
     }
     if log_path:
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        log_path.write_text(proc.stdout + "\n--- stderr ---\n" + proc.stderr, encoding="utf-8")
-    if proc.returncode == 1 or detections:
+        log_path.write_text("\n".join(out_log), encoding="utf-8")
+    if detections or 1 in codes:
         result["status"] = "QUARANTINED_DETECTION"
-    elif proc.returncode != 0:
+    elif not codes or any(c != 0 for c in codes):
         result["status"] = "BLOCKED_UNSCANNED"
     else:
         result["status"] = "SAFETY_CHECK_OK"
@@ -118,7 +180,8 @@ def inspect_safetensors(path: Path, max_header: int = 100 * 1024 * 1024) -> dict
         max_end = max(max_end, e)
     if 8 + n + max_end > size:
         raise StudioError("BAD_FILE", f"{path.name}: ファイルが途中で切れています")
-    return {"format": "safetensors", "tensor_count": len(header),
+    markers = sorted(k for k in ("v_pred", "ztsnr") if k in header)  # v-prediction 系チェックポイントの目印
+    return {"format": "safetensors", "tensor_count": len(header), "special_keys": markers,
             "metadata_keys": sorted(meta.keys())[:50],
             "metadata_sample": {k: str(v)[:200] for k, v in list(meta.items())[:10]}}
 

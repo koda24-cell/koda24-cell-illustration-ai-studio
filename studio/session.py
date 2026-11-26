@@ -28,7 +28,7 @@ from .util import REPO_ROOT, StudioError, append_jsonl, dump_json, load_json, no
 
 FATAL_CODES = {"NOT_ALLOWED", "DEPENDENCY_MISSING", "MODEL_NOT_CACHED", "HASH_MISMATCH", "BLOCKED_UNSCANNED",
                "UNSUPPORTED_ARCH", "BAD_INPUT", "SECRET_MISSING", "DECRYPT_FAILED", "TOOL_MISSING",
-               "ALLOWLIST_INVALID", "BUDGET_EXCEEDED"}
+               "ALLOWLIST_INVALID", "BUDGET_EXCEEDED", "BAD_OUTPUT"}
 RUNS_DIR = Path(os.environ.get("STUDIO_RUNS_DIR", REPO_ROOT / "runs"))
 
 
