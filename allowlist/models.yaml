@@ -1,7 +1,32 @@
-# 使用許可モデル台帳（最重要）
-# - 初期状態は空。ユーザーが明示指定した Civitai URL・モデルID・バージョン・ファイルだけを登録する。
-# - 自動収集・ランキング・AI判断による追加、自動更新・自動置換は禁止。
-# - 必須依存モデルが判明しても勝手に追加せず、ユーザーに報告する。
-# - 登録手順と項目: docs/MODEL_REGISTRATION.md
 version: 1
-models: []
+models:
+- id: obsession-illustrious-xl-v-pred-v1-1
+  kind: checkpoint
+  source: civitai
+  url: https://civitai.com/models/820208?modelVersionId=1494740
+  civitai:
+    model_id: 820208
+    version_id: 1494740
+    file_id: 1394683
+  name: Obsession (Illustrious-XL)
+  version_name: v-pred_v1.1
+  author: rqdwdw
+  base_model: Illustrious
+  filename: Obsession_vPred-V1.1.safetensors
+  sha256: 104b9362d2ab82797b6b26a7eed043b5fd042bec5ba00cccaf3d8ee08bb29b93
+  size_bytes: 6938040802
+  format: SafeTensor
+  trained_words: []
+  license:
+    allowCommercialUse:
+    - RentCivit
+    allowNoCredit: true
+    allowDerivatives: true
+    allowDifferentLicense: false
+    note: Civitai API の値。最終的な利用可否は配布ページの記載と作品の用途でユーザーが判断する。
+  civitai_scan:
+    pickle: Success
+    virus: Success
+  added_by_user_instruction: '2026-11-26 GitHub Actions register-model 実行者 koda24-cell: ユーザー指示（チャット 2026-11-27 00:24 JST）:
+    Obsession (Illustrious-XL) v-pred_v1.1 を生成用モデルとして指定'
+  added_at: '2026-11-26'
