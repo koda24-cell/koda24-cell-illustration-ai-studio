@@ -99,7 +99,7 @@
     ]
   },
   "created_at": "2026-11-26T17:53:48+00:00",
-  "status": "running",
+  "status": "completed",
   "stages": {
     "cutout": {
       "status": "done",
@@ -386,8 +386,10 @@
     },
     {
       "started_at": "2026-11-26T19:37:35+00:00",
-      "resumed": true
+      "resumed": true,
+      "ended_at": "2026-11-26T20:57:07+00:00"
     }
   ],
-  "elapsed_total_min": 133.73
+  "elapsed_total_min": 133.75,
+  "finished_at": "2026-11-26T20:57:07+00:00"
 }
