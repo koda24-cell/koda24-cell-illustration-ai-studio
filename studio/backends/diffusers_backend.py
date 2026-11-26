@@ -277,6 +277,9 @@ class DiffusersBackend:
             kw["ip_adapter_image"] = inputs["ip_image"].convert("RGB")
         with torch.inference_mode():
             img = pipe(**kw).images[0]
+        del pipe
+        import gc
+        gc.collect()
         import numpy as np
         if not np.isfinite(np.asarray(img, dtype=np.float32)).all() or np.asarray(img).std() < 1:
             raise StudioError("BAD_OUTPUT", "生成結果が空/単色（設定不整合の可能性: v-pred 指定や dtype を確認）")
