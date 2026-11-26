@@ -1,0 +1,177 @@
+{
+  "run_id": "selftest-procedural-20261126-143811",
+  "job_id": "selftest-procedural",
+  "title": "自己診断（モデル不使用）",
+  "status": "completed",
+  "backend": "procedural",
+  "backend_info": {
+    "backend": "procedural",
+    "warning": "テスト専用。AIモデルは使用していません"
+  },
+  "created_at": "2026-11-26T14:38:11+00:00",
+  "finished_at": "2026-11-26T14:38:14+00:00",
+  "elapsed_min": 0.07,
+  "models": [],
+  "errors_recovered": 0,
+  "fatal_error": null,
+  "stages": {
+    "base": {
+      "status": "done",
+      "stop_reason": "no_improvement",
+      "best": {
+        "image": "stages/base/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 128,
+          "height": 128,
+          "steps": 12,
+          "cfg": 7,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.5,
+          "prompt": "test pattern, outline",
+          "seed": 2009915480
+        }
+      },
+      "comparison": "comparisons/base_latest.png",
+      "private_inputs": []
+    },
+    "variant": {
+      "status": "done",
+      "stop_reason": "no_improvement",
+      "best": {
+        "image": "stages/variant/r00_c1.png",
+        "score": 0.8665,
+        "round": 0,
+        "params": {
+          "width": 128,
+          "height": 128,
+          "steps": 12,
+          "cfg": 7,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.6,
+          "prompt": "test pattern, vibrant",
+          "seed": 1111641348
+        }
+      },
+      "comparison": "comparisons/variant_latest.png",
+      "private_inputs": []
+    },
+    "wider": {
+      "status": "done",
+      "stop_reason": "no_improvement",
+      "best": {
+        "image": "stages/wider/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 192,
+          "height": 128,
+          "steps": 12,
+          "cfg": 7,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.9,
+          "prompt": "test pattern",
+          "seed": 1088802238
+        }
+      },
+      "comparison": "comparisons/wider_latest.png",
+      "private_inputs": []
+    },
+    "hires": {
+      "status": "done",
+      "stop_reason": "no_improvement",
+      "best": {
+        "image": "stages/hires/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 192,
+          "height": 192,
+          "steps": 12,
+          "cfg": 7,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.3,
+          "prompt": "test pattern",
+          "seed": 614451616
+        }
+      },
+      "comparison": "comparisons/hires_latest.png",
+      "private_inputs": []
+    },
+    "cutout": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/cutout/r00_c0.png",
+        "score": 1.0,
+        "round": 0
+      },
+      "comparison": null,
+      "private_inputs": []
+    },
+    "lineart": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/lineart/r00_c0.png",
+        "score": 0.775,
+        "round": 0
+      },
+      "comparison": null,
+      "private_inputs": []
+    },
+    "big": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/big/r00_c0.png",
+        "score": 1.0,
+        "round": 0
+      },
+      "comparison": null,
+      "private_inputs": []
+    },
+    "bg": {
+      "status": "done",
+      "stop_reason": "no_improvement",
+      "best": {
+        "image": "stages/bg/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 128,
+          "height": 128,
+          "steps": 12,
+          "cfg": 7,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.5,
+          "prompt": "test background, bright",
+          "seed": 1817695110
+        }
+      },
+      "comparison": "comparisons/bg_latest.png",
+      "private_inputs": []
+    },
+    "composite": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/composite/r00_c0.png",
+        "score": 1.0,
+        "round": 0
+      },
+      "comparison": null,
+      "private_inputs": []
+    }
+  },
+  "publish": true,
+  "assign_to": {},
+  "approval": "unapproved（approvals/approvals.yaml でユーザーのみ変更）",
+  "has_private_inputs": false
+}

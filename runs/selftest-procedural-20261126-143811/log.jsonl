@@ -15,3 +15,5 @@
 {"t": "2026-11-26T14:38:14+00:00", "event": "round_done", "stage": "bg", "round": 0, "best_score": 1.0, "improved": true, "changes": ["cfg: 7 → 7.5（探索）"]}
 {"t": "2026-11-26T14:38:14+00:00", "event": "round_done", "stage": "bg", "round": 1, "best_score": 1.0, "improved": false, "changes": ["cfg: 7 → 7.5（探索）"]}
 {"t": "2026-11-26T14:38:14+00:00", "event": "round_done", "stage": "bg", "round": 2, "best_score": 1.0, "improved": false, "changes": ["cfg: 7 → 6.5（探索）"]}
+{"t": "2026-11-26T14:38:15+00:00", "event": "checkpoint", "exit_code": 0, "stderr": ""}
+{"t": "2026-11-26T14:38:15+00:00", "event": "session_end", "status": "completed"}
