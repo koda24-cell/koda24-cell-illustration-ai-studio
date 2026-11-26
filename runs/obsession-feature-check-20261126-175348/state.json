@@ -241,6 +241,15 @@
       "first_best": "stages/expression_laugh/r00_c0.png",
       "comparison": "comparisons/expression_laugh_latest.png",
       "stop_reason": "max_rounds"
+    },
+    "autumn_variant": {
+      "status": "pending",
+      "rounds": [],
+      "private_inputs": [],
+      "name": "autumn_variant",
+      "base_seed": 20261127,
+      "sec_per_candidate": 1190.410565853119,
+      "n_done": 1
     }
   },
   "errors_recovered": 0,
@@ -255,5 +264,5 @@
       "resumed": true
     }
   ],
-  "elapsed_total_min": 54.22
+  "elapsed_total_min": 75.52
 }
