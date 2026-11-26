@@ -1,0 +1,63 @@
+{
+  "run_id": "selftest-procedural-20261126-143811",
+  "stage": "base",
+  "round": 1,
+  "candidate": 1,
+  "op": "txt2img",
+  "params": {
+    "width": 128,
+    "height": 128,
+    "steps": 12,
+    "cfg": 7.5,
+    "scheduler": "euler_a",
+    "negative_prompt": "",
+    "denoise": 0.5,
+    "prompt": "test pattern, outline",
+    "seed": 2009915481
+  },
+  "seconds": 0.0,
+  "evaluation": {
+    "overall": 1.0,
+    "metrics": {
+      "composition": {
+        "score": 1.0,
+        "rationale": "視覚的重心 (0.47,0.48)。極端な偏りのみ減点",
+        "limitations": "エッジ量の重心と余白の偏り。主題の認識はしていない。",
+        "values": {
+          "cx": 0.4731,
+          "cy": 0.4819
+        }
+      },
+      "artifacts": {
+        "score": 1.0,
+        "rationale": "兆候: 検出なし",
+        "limitations": "空白・極端な白飛び/黒つぶれ・高周波ノイズの兆候のみ。手指や人体の破綻は検出できない。",
+        "values": {
+          "issues": [],
+          "hf_energy": 0.0191,
+          "clipped_white": 0.0,
+          "clipped_black": 0.0
+        }
+      },
+      "consistency": {
+        "score": null,
+        "rationale": "基準画像なし",
+        "limitations": "基準画像との配色・トーンの近さ（同一キャラの代理指標）。顔や体型の同一性は見ていない。",
+        "values": {}
+      },
+      "pose": {
+        "score": null,
+        "rationale": "評価不能：姿勢推定モデルが許可リストにありません",
+        "limitations": "姿勢推定モデルが必要。",
+        "values": {}
+      }
+    },
+    "weights_used": {
+      "composition": 0.5,
+      "artifacts": 1.5
+    },
+    "note": "自動評価は制作途中の改善用の参考値。美術的な完成度の判定や採用判断ではない。"
+  },
+  "created_at": "2026-11-26T14:38:13+00:00",
+  "backend": "procedural"
+}
