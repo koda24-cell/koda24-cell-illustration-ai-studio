@@ -1,1 +1,3 @@
 {"t": "2026-11-26T17:53:48+00:00", "event": "session_start", "resumed": false, "remaining_min": 330.0}
+{"t": "2026-11-26T17:53:51+00:00", "event": "checkpoint", "exit_code": 0, "stderr": ""}
+{"t": "2026-11-26T18:22:05+00:00", "event": "round_done", "stage": "expression_laugh", "round": 0, "best_score": 0.9876, "improved": true, "changes": ["cfg: 4.5 → 5（探索）"]}
