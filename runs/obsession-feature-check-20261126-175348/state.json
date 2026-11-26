@@ -310,7 +310,7 @@
       "stop_reason": "max_rounds"
     },
     "wider": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -374,23 +374,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/wider/r00_c0.png",
-      "next_params": {
-        "width": 1216,
-        "height": 1216,
-        "steps": 20,
-        "cfg": 5.0,
-        "scheduler": "euler",
-        "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
-        "denoise": 0.9,
-        "model": "obsession-illustrious-xl-v-pred-v1-1",
-        "pipeline_config": "sdxl-base-1-0-config",
-        "prediction_type": "v_prediction",
-        "zero_terminal_snr": true,
-        "guidance_rescale": 0.7,
-        "dtype": "float32",
-        "seed": 20261127,
-        "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, simple background, white background"
-      }
+      "stop_reason": "max_rounds"
     }
   },
   "errors_recovered": 0,
@@ -405,5 +389,5 @@
       "resumed": true
     }
   ],
-  "elapsed_total_min": 133.71
+  "elapsed_total_min": 133.73
 }

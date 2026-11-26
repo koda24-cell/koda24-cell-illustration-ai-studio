@@ -15,3 +15,5 @@
 {"t": "2026-11-26T19:58:57+00:00", "event": "candidate_start", "stage": "wider", "round": 0, "candidate": 0, "mem_available_mb": 2961, "swap_free_mb": 10197, "vmhwm_mb": 14995, "vmrss_mb": 12018}
 {"t": "2026-11-26T20:57:04+00:00", "event": "checkpoint", "exit_code": 0, "stderr": ""}
 {"t": "2026-11-26T20:57:04+00:00", "event": "round_done", "stage": "wider", "round": 0, "best_score": 1.0, "improved": true, "changes": ["cfg: 4.5 → 5（探索）"], "mem_available_mb": 5047, "swap_free_mb": 8238, "vmhwm_mb": 15049, "vmrss_mb": 9793}
+{"t": "2026-11-26T20:57:05+00:00", "event": "checkpoint", "exit_code": 0, "stderr": ""}
+{"t": "2026-11-26T20:57:05+00:00", "event": "stage_done", "stage": "wider", "mem_available_mb": 5050, "swap_free_mb": 8238, "vmhwm_mb": 15049, "vmrss_mb": 9793}
