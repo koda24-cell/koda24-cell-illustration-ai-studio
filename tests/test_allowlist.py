@@ -106,3 +106,12 @@ def test_time_budget_and_retry_limits():
         jobspec.normalize({"job_id": "t", "time_budget_minutes": 400, "stages": [{"name": "a", "op": "txt2img"}]})
     with pytest.raises(StudioError):
         jobspec.normalize({"job_id": "t", "limits": {"max_error_retries": 5}, "stages": [{"name": "a", "op": "txt2img"}]})
+
+
+def test_private_derivative_sources_reported(tmp_path, test_images):
+    m, i = write_allowlist(tmp_path, [GOOD], [image_entry("priv", test_images["private_ref"], False)])
+    j = _job(model="test-ckpt")
+    j["stages"][0].update(op="img2img", init="images:priv")
+    j["evaluation"]["references"] = ["images:priv"]
+    v = jobspec.validate_against_allowlist(j, Allowlist.load(m, i))
+    assert v["private_derivative_sources"] == ["priv"]

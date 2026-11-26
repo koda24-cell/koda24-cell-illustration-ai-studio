@@ -74,6 +74,11 @@ jobs:
             JOB="$JOB_IN"
           fi
           python -m studio job-validate "$JOB" | tee validate.json
+          # Public リポジトリでは非公開画像から派生する生成物を studio-runs（公開）に保存できないため停止
+          if [ "${{ github.event.repository.private }}" != "true" ] && \
+             [ -n "$(python -c "import json;print(' '.join(json.load(open('validate.json'))['private_derivative_sources']))")" ]; then
+            echo "::error::非公開画像（public_ok/derivatives_public_ok=false）から派生する制作は Public リポジトリでは実行しません"; exit 1
+          fi
           echo "backend=$(python -c "import yaml;print(yaml.safe_load(open('$JOB')).get('backend','diffusers'))")" >> "$GITHUB_OUTPUT"
           echo "models=$(python -c "import json;print(' '.join(json.load(open('validate.json'))['models']))")" >> "$GITHUB_OUTPUT"
       - name: Install generation stack (CPU)

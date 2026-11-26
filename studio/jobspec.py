@@ -74,6 +74,7 @@ def validate_against_allowlist(job: dict[str, Any], al: Allowlist) -> dict[str, 
     """全モデル・画像参照を検査し、model: auto を許可済みモデルから解決する。"""
     used_models: set[str] = set()
     problems: list[str] = []
+    private_sources: set[str] = set()  # 生成物に派生する非公開画像
     backend = job["backend"]
     names_before: set[str] = set()
 
@@ -90,7 +91,9 @@ def validate_against_allowlist(job: dict[str, Any], al: Allowlist) -> dict[str, 
         ref = str(ref)
         if ref.startswith("images:"):
             try:
-                al.require_image(ref.split(":", 1)[1], role)
+                e = al.require_image(ref.split(":", 1)[1], role)
+                if role != "reference" and not (e.public_ok or e.derivatives_public_ok):
+                    private_sources.add(e.id)
             except NotAllowed as e:
                 problems.append(e.message)
         elif ref.startswith("stage:"):
@@ -140,7 +143,7 @@ def validate_against_allowlist(job: dict[str, Any], al: Allowlist) -> dict[str, 
         chk_model(ev, {"evaluator"})
     if problems:
         raise NotAllowed("ジョブが許可リスト外のデータを参照しています:\n- " + "\n- ".join(problems))
-    return {"models": sorted(used_models)}
+    return {"models": sorted(used_models), "private_derivative_sources": sorted(private_sources)}
 
 
 # ---------- 画像読込 ----------
