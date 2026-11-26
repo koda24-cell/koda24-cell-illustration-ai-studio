@@ -1,0 +1,69 @@
+# テンプレート: 部分修正・範囲拡張。<...> を置換し、model を許可済みIDにしてから jobs/ にコピーして使う
+job_id: tpl-inpaint
+title: 部分修正・範囲拡張
+backend: diffusers
+time_budget_minutes: 90
+publish: true
+assign_to:
+  project: ''
+  targets: []
+limits:
+  max_rounds: 5
+  candidates_per_round: 3
+  patience: 2
+  target_score: 0.8
+defaults:
+  model: auto
+  purpose:
+  - anime
+  - character
+  loras: []
+  width: 512
+  height: 768
+  steps: 24
+  cfg: 7
+  scheduler: euler_a
+  negative_prompt: lowres, bad anatomy, bad hands
+evaluation:
+  references: []
+  metrics:
+  - color
+  - value_saturation
+  - lineart
+  - shading
+  - composition
+  - similarity
+  - artifacts
+  - consistency
+improve:
+  enabled: true
+  tune:
+  - cfg
+  - steps
+  - denoise
+  - prompt
+stages:
+- name: fix
+  op: inpaint
+  init: images:<元画像ID>
+  mask:
+    rect:
+    - 0.4
+    - 0.5
+    - 0.2
+    - 0.2
+  prompt: <修正内容>
+  denoise: 0.6
+- name: extend
+  op: outpaint
+  init: stage:fix
+  outpaint:
+    left: 128
+    right: 128
+  prompt: <拡張部分の内容>
+- name: upscale
+  op: hires_upscale
+  init: stage:extend
+  scale: 1.5
+  denoise: 0.3
+  prompt: <全体の内容>

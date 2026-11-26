@@ -1,0 +1,20 @@
+# 大容量モデル・キャッシュは Git に含めない（actions/cache / 再取得で復元）
+.cache/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+# ローカル実行の成果物（Actions では studio-runs ブランチに保存）
+runs/
+ci-runs/
+_site/
+runs-branch/
+fetch_report.json
+model_fetch_report.json
+__pycache__/
+.pytest_cache/
+# 非公開入力の平文（暗号化した .enc のみコミット可）
+inputs/private/
+.env

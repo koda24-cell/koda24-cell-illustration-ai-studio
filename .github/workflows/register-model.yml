@@ -1,0 +1,60 @@
+name: register-model
+# ユーザーが指定した Civitai URL から許可リストの登録下書きを作り、ブランチに push する（PR 前提）。
+# 実行者（ユーザー）の指示として記録。main へは直接書き込まない。モデル本体はここでは取得しない。
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Civitai URL（?modelVersionId= 付き、またはバージョンID付きダウンロードURL）"
+        required: true
+      note:
+        description: "用途メモ（例: コタマ立ち絵用のベースモデル）"
+        required: true
+      kind:
+        description: "種類（空なら Civitai の type から判定）"
+        required: false
+        default: ""
+      file_id:
+        description: "ファイルID（複数ファイルがある場合）"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: requirements/base.txt }
+      - run: pip install -r requirements/base.txt
+      - name: Draft entry (metadata only)
+        env:
+          CIVITAI_API_TOKEN: ${{ secrets.CIVITAI_API_TOKEN }}
+          URL: ${{ inputs.url }}
+          NOTE: ${{ inputs.note }}
+          KIND: ${{ inputs.kind }}
+          FILE_ID: ${{ inputs.file_id }}
+        run: |
+          args=(--url "$URL" --instruction "$(date -u +%F) GitHub Actions register-model 実行者 ${{ github.actor }}: $NOTE" --append)
+          [ -n "$KIND" ] && args+=(--kind "$KIND")
+          [ -n "$FILE_ID" ] && args+=(--file-id "$FILE_ID")
+          python -m studio allowlist-draft "${args[@]}" | tee draft.yaml
+          python -m studio allowlist-check
+          python -m studio ledger-sync
+      - name: Push branch and open PR
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          id=$(python -c "import yaml;print(yaml.safe_load(open('draft.yaml'))[0]['id'])")
+          br="allowlist/${id}-${{ github.run_id }}"
+          git checkout -b "$br"
+          git -c user.name="studio-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -am "allowlist: add ${id} (user instruction by ${{ github.actor }})"
+          git push origin "$br"
+          gh pr create --base main --head "$br" --title "許可リスト追加: ${id}" \
+            --body "$(printf 'ユーザー指示による登録（register-model run ${{ github.run_id }}）。\n\n```yaml\n%s\n```\n\nマージ後 fetch-models が取得・ClamAV検査・SHA256照合します。ライセンスを確認してからマージしてください。' "$(cat draft.yaml)")" \
+            || echo "::warning::PR を自動作成できませんでした（Settings > Actions で PR 作成許可が必要）。ブランチ $br から手動で PR を作成してください"

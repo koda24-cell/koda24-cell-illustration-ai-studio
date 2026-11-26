@@ -1,0 +1,78 @@
+name: ci
+# 基盤の検証（モデル不使用）：単体テスト・許可リスト検査・費用ガード静的検査・自己診断ラン・サイト生成・ClamAVゲート
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/base.txt
+      - run: pip install -r requirements/base.txt
+      - name: Unit tests
+        run: python -m pytest -q
+      - name: Allowlist check (must be valid; empty is OK)
+        run: python -m studio allowlist-check
+      - name: Free-runner / no-paid-API lint
+        run: python -m studio budget-lint
+      - name: Environment report
+        run: python -m studio doctor
+      - name: Selftest run (procedural backend, no AI model)
+        run: python -m studio selftest --runs-dir ci-runs --run-id selftest-ci
+      - name: Build review site from selftest
+        run: python -m studio site --runs-dir ci-runs --out _site
+      - uses: actions/upload-artifact@v4
+        with:
+          name: selftest-run-and-site
+          path: |
+            ci-runs/
+            _site/
+          retention-days: 14
+
+  clamav-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/base.txt
+      - run: pip install -r requirements/base.txt
+      - name: Restore ClamAV DB
+        uses: actions/cache@v4
+        with:
+          path: /var/lib/clamav
+          key: clamav-db-${{ github.run_id }}
+          restore-keys: clamav-db-
+      - run: bash scripts/setup_clamav.sh
+      - name: Gate test — clean file passes, EICAR test file is quarantined
+        run: |
+          mkdir -p q && echo "hello" > q/clean.txt
+          python -m studio scan q/clean.txt --log q/clean.log
+          # EICAR 標準テスト文字列（無害な検知テスト用）
+          printf '%s' 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > q/eicar.txt
+          set +e; python -m studio scan q/eicar.txt --log q/eicar.log > q/eicar.json; rc=$?; set -e
+          cat q/eicar.json
+          test "$rc" = "1" && grep -q QUARANTINED_DETECTION q/eicar.json
+          echo "ClamAV gate OK"
+      - name: Fix cache permissions
+        if: always()
+        run: sudo chmod -R a+rX /var/lib/clamav || true

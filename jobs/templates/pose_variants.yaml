@@ -1,0 +1,54 @@
+# テンプレート: ポーズ差分。<...> を置換し、model を許可済みIDにしてから jobs/ にコピーして使う
+job_id: tpl-poses
+title: ポーズ差分
+backend: diffusers
+time_budget_minutes: 90
+publish: true
+assign_to:
+  project: ''
+  targets: []
+limits:
+  max_rounds: 5
+  candidates_per_round: 3
+  patience: 2
+  target_score: 0.8
+defaults:
+  model: auto
+  purpose:
+  - anime
+  - character
+  loras: []
+  width: 512
+  height: 768
+  steps: 24
+  cfg: 7
+  scheduler: euler_a
+  negative_prompt: lowres, bad anatomy, bad hands
+evaluation:
+  references: []
+  metrics:
+  - color
+  - value_saturation
+  - lineart
+  - shading
+  - composition
+  - similarity
+  - artifacts
+  - consistency
+improve:
+  enabled: true
+  tune:
+  - cfg
+  - steps
+  - denoise
+  - prompt
+recipe:
+  type: pose_variants
+  prompt: 1girl, <キャラの特徴>
+  poses:
+  - prompt: sitting
+  - prompt: running
+    control_image: images:<ポーズ画像ID>
+  controlnet:
+    id: <許可済みcontrolnetID>
+    scale: 0.8

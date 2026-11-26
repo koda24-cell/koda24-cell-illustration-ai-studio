@@ -1,0 +1,24 @@
+# 自動改善ルール（ルールベース。LLM や外部APIは使わない）
+# 評価結果の不足点に応じて、ここに書かれたタグだけをプロンプトに追加/削除し、
+# パラメータを範囲内で調整する。モデル・LoRA・参照画像の追加は絶対に行わない。
+
+thresholds:
+  saturation_gap: 0.06      # 参考画像との平均彩度の差がこれ以上なら調整
+  value_gap: 0.06           # 平均明度の差
+  edge_gap: 0.02            # エッジ密度の差
+  similarity_low: 0.45      # img2img/差分で元画像から離れすぎ
+  similarity_high: 0.92     # 元画像に近すぎて変化がない
+
+prompt_tags:
+  more_saturation: ["vibrant colors"]
+  less_saturation: ["muted colors"]
+  brighter: ["bright lighting"]
+  darker: ["dim lighting"]
+  stronger_lines: ["clean lineart", "bold outlines"]
+  softer_lines: ["soft lineart"]
+  artifact_negative: ["lowres", "blurry", "jpeg artifacts", "noisy"]
+
+params:
+  cfg: {min: 3.0, max: 11.0, step: 0.5}
+  steps: {min: 12, max: 40, step: 4}
+  denoise: {min: 0.2, max: 0.85, step: 0.08}

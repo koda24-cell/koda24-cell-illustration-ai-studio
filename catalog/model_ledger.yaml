@@ -1,0 +1,4 @@
+# モデル台帳（モデルの特徴・推奨設定・実績）。許可の根拠にはならない（許可は allowlist/models.yaml）。
+# `python -m studio ledger-sync` で許可済みモデルの枠を作成。既存の記入は上書きしない。
+version: 1
+models: {}

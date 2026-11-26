@@ -1,0 +1,24 @@
+name: docker
+# 再利用・ローカル実行用の CPU コンテナをビルドし、コンテナ内で自己診断を実行して検証する。
+on:
+  pull_request:
+    paths: [Dockerfile, requirements/**, .github/workflows/docker.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/free_disk.sh
+      - name: Build image
+        run: docker build -t illustration-ai-studio:ci .
+      - name: Selftest inside container
+        run: |
+          docker run --rm illustration-ai-studio:ci python -m studio doctor
+          docker run --rm illustration-ai-studio:ci python -m studio selftest --runs-dir /tmp/runs --run-id docker-selftest
+          docker run --rm illustration-ai-studio:ci python -c "import torch, diffusers; print('torch', torch.__version__, 'diffusers', diffusers.__version__)"

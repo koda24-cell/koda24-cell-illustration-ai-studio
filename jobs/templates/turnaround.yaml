@@ -1,0 +1,49 @@
+# テンプレート: キャラクター三面図。<...> を置換し、model を許可済みIDにしてから jobs/ にコピーして使う
+job_id: tpl-turnaround
+title: キャラクター三面図
+backend: diffusers
+time_budget_minutes: 90
+publish: true
+assign_to:
+  project: ''
+  targets: []
+limits:
+  max_rounds: 5
+  candidates_per_round: 3
+  patience: 2
+  target_score: 0.8
+defaults:
+  model: auto
+  purpose:
+  - anime
+  - character
+  loras: []
+  width: 512
+  height: 768
+  steps: 24
+  cfg: 7
+  scheduler: euler_a
+  negative_prompt: lowres, bad anatomy, bad hands
+evaluation:
+  references: []
+  metrics:
+  - color
+  - value_saturation
+  - lineart
+  - shading
+  - composition
+  - similarity
+  - artifacts
+  - consistency
+improve:
+  enabled: true
+  tune:
+  - cfg
+  - steps
+  - denoise
+  - prompt
+recipe:
+  type: turnaround
+  prompt: 1girl, <キャラの特徴>
+  width: 1024
+  height: 512
