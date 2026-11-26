@@ -1,6 +1,7 @@
 # 制作指示テンプレート
 
-GPT・Claude・ユーザーの誰が書いても同じ形式。`jobs/` に YAML で保存し、`python -m studio job-validate` で確認してから `produce` で実行します。
+GPT・Claude・Codex・ユーザーの誰が書いても同じ形式。`jobs/queue/` に置いて push すれば実行されます（手動なら `produce` の `job` に指定）。
+事前確認は `python -m studio job-validate <yaml>`。
 
 ## 依頼文テンプレート（チャットで AI に渡す用）
 ```
@@ -39,6 +40,8 @@ defaults:                             # 全ステージ共通の生成設定
   steps: 24
   cfg: 7
   scheduler: euler_a                  # euler_a / euler / dpmpp_2m / dpmpp_2m_karras / ddim / unipc
+  # Obsession など SDXL v-pred 系: prediction_type: v_prediction / zero_terminal_snr: true / guidance_rescale: 0.7
+  # 速度設定（画質は変わらない）: attention_slicing: false（推奨・検証結果は VERIFICATION.md）, channels_last
   negative_prompt: "lowres, bad anatomy"
 evaluation:
   references: ["images:kotama-ref-01"]
