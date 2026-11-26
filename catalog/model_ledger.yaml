@@ -1,4 +1,44 @@
-# モデル台帳（モデルの特徴・推奨設定・実績）。許可の根拠にはならない（許可は allowlist/models.yaml）。
-# `python -m studio ledger-sync` で許可済みモデルの枠を作成。既存の記入は上書きしない。
 version: 1
-models: {}
+models:
+  obsession-illustrious-xl-v-pred-v1-1:
+    name: Obsession (Illustrious-XL)
+    version: v-pred_v1.1
+    source_url: https://civitai.com/models/820208?modelVersionId=1494740
+    author: rqdwdw
+    kind: checkpoint
+    base_model: Illustrious
+    file_format: SafeTensor
+    size_bytes: 6938040802
+    sha256: 104b9362d2ab82797b6b26a7eed043b5fd042bec5ba00cccaf3d8ee08bb29b93
+    license:
+      commercial_use: &id001
+      - RentCivit
+      civitai_flags:
+        allowCommercialUse: *id001
+        allowNoCredit: true
+        allowDerivatives: true
+        allowDifferentLicense: false
+        note: Civitai API の値。最終的な利用可否は配布ページの記載と作品の用途でユーザーが判断する。
+      notes: Civitai API の値。用途ごとの最終判断はユーザー
+    strengths:
+      styles: []
+      content: []
+      source: 未記入（配布元記載 or 実生成結果から追記）
+    recommended_settings:
+      sampler: null
+      steps: null
+      cfg: null
+      width: null
+      height: null
+      clip_skip: null
+      notes: null
+    trigger_words: []
+    compatible_with: []
+    required_dependencies: []
+    cpu_status:
+      status: 未検証
+      seconds_per_image: null
+      resolution: null
+      run: null
+    results: []
+    allowed: true
