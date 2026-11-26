@@ -1,0 +1,29 @@
+# Prior chat: active pose, camera perspective, and integrated background.
+# Original prompt reconstructed from available conversation context; not a verbatim copy.
+job_id: gpt-dynamic-ruins-20261127
+title: 廃墟都市の魔術師・躍動構図（1枚）
+backend: diffusers
+time_budget_minutes: 120
+publish: true
+limits: {max_rounds: 1, candidates_per_round: 1, patience: 1, target_score: 1.5, max_error_retries: 3}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  width: 832
+  height: 1216
+  steps: 20
+  cfg: 4.5
+  scheduler: euler
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  seed: 2026112701
+  negative_prompt: "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished, bad anatomy, bad hands, extra fingers, nsfw"
+evaluation:
+  metrics: [composition, artifacts, lineart, shading, value_saturation]
+improve: {enabled: false, tune: []}
+stages:
+  - name: illustration
+    op: txt2img
+    prompt: "very awa, masterpiece, best quality, 1girl, solo, airborne, twisting pose, reaching towards viewer, foreshortening, dutch angle, wide angle, orange hair, flowing coat, ruined city, glowing debris, blurry foreground, cinematic lighting, painterly shading"
