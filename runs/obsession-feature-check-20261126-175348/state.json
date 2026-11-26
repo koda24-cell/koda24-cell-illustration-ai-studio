@@ -163,22 +163,67 @@
           "next_changes": [
             "cfg: 4.5 → 5（探索）"
           ]
+        },
+        {
+          "round": 1,
+          "params": {
+            "width": 832,
+            "height": 1216,
+            "steps": 20,
+            "cfg": 5.0,
+            "scheduler": "euler",
+            "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+            "denoise": 0.55,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 20261127,
+            "prompt": "masterpiece, best quality, newest, general, 1girl, solo, short brown hair, laughing, open mouth, closed eyes, green hooded cloak"
+          },
+          "candidates": [
+            {
+              "image": "stages/expression_laugh/r01_c0.png",
+              "score": 0.988,
+              "seconds": 772.7025918960571
+            },
+            {
+              "image": "stages/expression_laugh/r01_c1.png",
+              "score": 0.986,
+              "seconds": 781.5432002544403
+            }
+          ],
+          "best": "stages/expression_laugh/r01_c0.png",
+          "best_score": 0.988,
+          "vs_first": {
+            "overall_delta": 0.0004,
+            "metric_delta": {
+              "composition": 0.0,
+              "artifacts": 0.0,
+              "consistency": 0.0013
+            }
+          },
+          "next_changes": [
+            "cfg: 5 → 5.5（探索）"
+          ]
         }
       ],
       "private_inputs": [],
       "name": "expression_laugh",
       "base_seed": 20261127,
-      "sec_per_candidate": 814.8264310359955,
-      "n_done": 2,
+      "sec_per_candidate": 795.9746635556221,
+      "n_done": 4,
       "best": {
-        "image": "stages/expression_laugh/r00_c0.png",
-        "score": 0.9876,
-        "round": 0,
+        "image": "stages/expression_laugh/r01_c0.png",
+        "score": 0.988,
+        "round": 1,
         "params": {
           "width": 832,
           "height": 1216,
           "steps": 20,
-          "cfg": 4.5,
+          "cfg": 5.0,
           "scheduler": "euler",
           "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
           "denoise": 0.55,
@@ -198,7 +243,7 @@
         "width": 832,
         "height": 1216,
         "steps": 20,
-        "cfg": 5.0,
+        "cfg": 5.5,
         "scheduler": "euler",
         "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
         "denoise": 0.55,
@@ -210,7 +255,8 @@
         "dtype": "float32",
         "seed": 20261127,
         "prompt": "masterpiece, best quality, newest, general, 1girl, solo, short brown hair, laughing, open mouth, closed eyes, green hooded cloak"
-      }
+      },
+      "comparison": "comparisons/expression_laugh_latest.png"
     }
   },
   "errors_recovered": 0,
@@ -221,5 +267,5 @@
       "resumed": false
     }
   ],
-  "elapsed_total_min": 28.28
+  "elapsed_total_min": 54.22
 }
