@@ -1,4 +1,37 @@
-# モデル台帳（モデルの特徴・推奨設定・実績）。許可の根拠にはならない（許可は allowlist/models.yaml）。
-# `python -m studio ledger-sync` で許可済みモデルの枠を作成。既存の記入は上書きしない。
 version: 1
-models: {}
+models:
+  sdxl-base-1-0-config:
+    name: stabilityai/stable-diffusion-xl-base-1.0 (pipeline_config)
+    version: null
+    source_url: https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/tree/462165984030d82259a11f4367a4eed129e94a7b
+    author: null
+    kind: pipeline_config
+    base_model: null
+    file_format: json
+    size_bytes: 609
+    sha256: 6d7b93508390ab91ac5bfbe4aeb4dc2d83f7bb1b05fb069d714b5b0c75f70d44
+    license:
+      commercial_use: null
+      notes: 未確認（配布ページで要確認）
+    strengths:
+      styles: []
+      content: []
+      source: 未記入（配布元記載 or 実生成結果から追記）
+    recommended_settings:
+      sampler: null
+      steps: null
+      cfg: null
+      width: null
+      height: null
+      clip_skip: null
+      notes: null
+    trigger_words: []
+    compatible_with: []
+    required_dependencies: []
+    cpu_status:
+      status: 未検証
+      seconds_per_image: null
+      resolution: null
+      run: null
+    results: []
+    allowed: true
