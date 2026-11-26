@@ -5,7 +5,7 @@ set -u
 repo="${STUDIO_RUNS_REPO:?}"
 run_dir="${1:-}"
 cd "$repo" || exit 1
-git add -A runs ledger 2>/dev/null || git add -A
+git add -A
 if git diff --cached --quiet; then exit 0; fi
 git -c user.name="studio-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
   commit -q -m "checkpoint: $(basename "${run_dir:-run}") $(date -u +%FT%TZ)" || exit 1

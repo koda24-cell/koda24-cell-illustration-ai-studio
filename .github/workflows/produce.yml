@@ -55,9 +55,10 @@ jobs:
           if git ls-remote --exit-code --heads origin studio-runs >/dev/null; then
             git clone -q --depth 1 --branch studio-runs "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" runs-branch
           else
-            mkdir runs-branch && cd runs-branch && git init -q -b studio-runs
-            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
-            mkdir -p runs ledger && echo "# 制作結果（削除禁止・追記のみ）" > README.md
+            mkdir runs-branch
+            git -C runs-branch init -q -b studio-runs
+            git -C runs-branch remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+            echo "# 制作結果（削除禁止・追記のみ）" > runs-branch/README.md
           fi
           mkdir -p runs-branch/runs runs-branch/ledger
           [ -f runs-branch/ledger/model_ledger.yaml ] || cp catalog/model_ledger.yaml runs-branch/ledger/model_ledger.yaml
