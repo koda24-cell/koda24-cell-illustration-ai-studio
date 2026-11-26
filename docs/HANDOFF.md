@@ -25,3 +25,4 @@
 - 基盤・許可リスト・モデル管理・生成/評価/長時間セッション・Actions・サイトを実装（PR #1）。
 - 許可リストは空。**生成用モデルの指定待ち**。指定後に fetch-models → produce で実生成を検証する。
 - Diffusers 経由の全生成機能は未検証（🟡）。Checkpoint 指定時は pipeline_config（構成ファイル）も必須依存として指定が必要。
+- 2026-11-26 追記: PR #1・#2 マージ済み。produce（自己診断）・再開・Pages 公開を Actions で確認（VERIFICATION.md）。残りはモデル指定後の実生成検証。
