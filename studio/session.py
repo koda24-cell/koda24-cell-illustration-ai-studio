@@ -48,6 +48,23 @@ def classify_error(exc: BaseException) -> dict[str, Any]:
     return {"code": "RUNTIME", "fatal": False, "analysis": text[:500], "mitigation": None}
 
 
+def mem_info() -> dict[str, Any]:
+    """メモリ状況（OOM 診断用）。Linux 以外では空。"""
+    out: dict[str, Any] = {}
+    try:
+        with open("/proc/meminfo") as f:
+            kv = {l.split(":")[0]: int(l.split()[1]) for l in f if l.split()[1].isdigit()}
+        out = {"mem_available_mb": kv.get("MemAvailable", 0) // 1024,
+               "swap_free_mb": kv.get("SwapFree", 0) // 1024}
+        with open("/proc/self/status") as f:
+            for l in f:
+                if l.startswith(("VmRSS", "VmHWM")):
+                    out[l.split(":")[0].lower() + "_mb"] = int(l.split()[1]) // 1024
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
 def _save_png(img: Image.Image, path: Path, meta: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     info = PngImagePlugin.PngInfo()
@@ -190,7 +207,8 @@ class Session:
                     if reason == "time_budget":
                         final_status = "time_budget_exhausted"
                         break
-                self.save_state()
+                self.log("stage_done", stage=stage["name"], **mem_info())
+                self.save_state(force_ckpt=True)
         except StudioError as e:
             info = classify_error(e)
             final_status = "failed"
@@ -300,6 +318,7 @@ class Session:
                 cp["seed"] = base_seed + k + (r * 1000 if lim.get("vary_seeds") else 0)
                 t0 = self.clock()
                 ld0 = float(getattr(self.backend, "load_seconds", 0.0) or 0.0)
+                self.log("candidate_start", stage=stage["name"], round=r, candidate=k, **mem_info())
                 img, used = self._call_backend(op, cp, inputs, ss)
                 load_secs = float(getattr(self.backend, "load_seconds", 0.0) or 0.0) - ld0
                 secs = self.clock() - t0 - load_secs  # 生成時間（モデル読込を除く）
@@ -317,6 +336,7 @@ class Session:
                 n = ss.get("n_done", 0)
                 ss["sec_per_candidate"] = (ss.get("sec_per_candidate", 0) * n + secs) / (n + 1)
                 ss["n_done"] = n + 1
+                self.save_state()  # 候補ごとに保存（push は間隔制限つき）。未完了ラウンドは再開時にやり直す
             best_c = max(cands, key=lambda c: -1 if c["score"] is None else c["score"])
             round_rec = {"round": r, "params": run_params, "candidates": cands, "best": best_c["image"],
                          "best_score": best_c["score"]}
@@ -350,8 +370,8 @@ class Session:
             ss["rounds"].append(round_rec)
             ss["next_params"] = params
             self.log("round_done", stage=stage["name"], round=r, best_score=best_c["score"], improved=improved,
-                     changes=changes)
-            self.save_state()
+                     changes=changes, **mem_info())
+            self.save_state(force_ckpt=True)  # ラウンドごとに途中保存（ランナー強制終了に備える）
             if ss["best"]["score"] is not None and ss["best"]["score"] >= lim["target_score"]:
                 stop = "target_reached"
                 break

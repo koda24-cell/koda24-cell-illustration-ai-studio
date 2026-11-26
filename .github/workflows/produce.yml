@@ -33,7 +33,7 @@ jobs:
       STUDIO_RUNS_DIR: ${{ github.workspace }}/runs-branch/runs
       STUDIO_LEDGER_FILE: ${{ github.workspace }}/runs-branch/ledger/model_ledger.yaml
       STUDIO_CHECKPOINT_CMD: bash ${{ github.workspace }}/scripts/checkpoint_push.sh
-      STUDIO_CHECKPOINT_INTERVAL_SEC: "900"
+      STUDIO_CHECKPOINT_INTERVAL_SEC: "300"
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
     steps:
@@ -86,6 +86,7 @@ jobs:
         if: steps.job.outputs.backend == 'diffusers'
         run: |
           bash scripts/free_disk.sh
+          bash scripts/add_swap.sh 12
           pip install -r requirements/gen.txt
           pip freeze | grep -iE "torch|diffusers|transformers|accelerate|safetensors|peft|spandrel" | tee gen_versions.txt
       - name: Restore model cache

@@ -33,18 +33,26 @@ models:
       width: 832
       height: 1216
       clip_skip: null
-      notes: '初期値（実測前）。v-pred: prediction_type=v_prediction, zero_terminal_snr=true, guidance_rescale=0.7。CPU 所要時間で解像度/steps
-        を調整'
+      notes: '実測済み: euler, 20 steps, cfg 4.5, 832x1216, fp32, v_prediction+zero_terminal_snr, guidance_rescale 0.7 で破綻なく生成（1枚約41分）。bfloat16
+        は CPU で大幅に遅い'
     trigger_words: []
     compatible_with: []
     required_dependencies:
     - sdxl-base-1-0-config（ユーザー承認済み 2026-11-27）
     cpu_status:
-      status: 未検証
-      seconds_per_image: null
-      resolution: null
-      run: null
-    results: []
+      status: 実動作確認済み
+      resolution: 832x1216
+      steps: 20
+      seconds_per_image: 2473
+      note: fp32・GitHub標準ランナー(4 vCPU)。モデル読込を含む1枚目。bfloat16 は69分経過でも1枚未完了のため不採用
+      run: obsession-bench-fp32-20261126-155303
+      actions: https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45852576694
+    results:
+    - run: obsession-bench-fp32-20261126-155303
+      candidate: stages/standing/r00_c0.png
+      score: null
+      date: '2026-11-27'
+      note: 立ち絵・白背景。目視で破綻なし
     allowed: true
   sdxl-base-1-0-config:
     name: stabilityai/stable-diffusion-xl-base-1.0 (pipeline_config)
