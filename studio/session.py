@@ -299,14 +299,17 @@ class Session:
                 # 既定は全ラウンド同じ seed 群（パラメータ変更の効果を比較しやすくする）
                 cp["seed"] = base_seed + k + (r * 1000 if lim.get("vary_seeds") else 0)
                 t0 = self.clock()
+                ld0 = float(getattr(self.backend, "load_seconds", 0.0) or 0.0)
                 img, used = self._call_backend(op, cp, inputs, ss)
-                secs = self.clock() - t0
+                load_secs = float(getattr(self.backend, "load_seconds", 0.0) or 0.0) - ld0
+                secs = self.clock() - t0 - load_secs  # 生成時間（モデル読込を除く）
                 evaluation = ev.evaluate(img, self._refs, base=cons_base,
                                          metrics=self.job["evaluation"].get("metrics"),
                                          weights=self.job["evaluation"].get("weights"), prompt=used.get("prompt"))
                 rel = f"stages/{stage['name']}/r{r:02d}_c{k}.png"
                 meta = {"run_id": self.run_id, "stage": stage["name"], "round": r, "candidate": k, "op": stage["op"],
-                        "params": used, "seconds": round(secs, 2), "evaluation": evaluation, "created_at": now_iso(),
+                        "params": used, "seconds": round(secs, 2), "load_seconds": round(load_secs, 2),
+                        "evaluation": evaluation, "created_at": now_iso(),
                         "backend": self.job["backend"]}
                 _save_png(img, self.dir / rel, {"params": used, "op": stage["op"]})
                 dump_json((self.dir / rel).with_suffix(".json"), meta)

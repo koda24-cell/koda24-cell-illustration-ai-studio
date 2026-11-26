@@ -23,7 +23,7 @@ LIMITS = {
     "shading": "明度分布（トーン）の近さ。影の位置や光源の正しさは判定しない。",
     "composition": "エッジ量の重心と余白の偏り。主題の認識はしていない。",
     "similarity": "縮小グレースケールのSSIMと知覚ハッシュ。構図・形の近さで、絵柄の近さとは別。",
-    "artifacts": "空白・極端な白飛び/黒つぶれ・高周波ノイズの兆候のみ。手指や人体の破綻は検出できない。",
+    "artifacts": "空白・極端な白飛び/黒つぶれ（外周につながる単色背景は除外）・高周波ノイズの兆候のみ。手指や人体の破綻は検出できない。",
     "consistency": "基準画像との配色・トーンの近さ（同一キャラの代理指標）。顔や体型の同一性は見ていない。",
     "clip": "許可済み CLIP 系モデルの埋め込み類似度。学習データの偏りを含む。",
     "pose": "姿勢推定モデルが必要。",
@@ -98,6 +98,15 @@ def dhash(img: Image.Image, size: int = 8) -> int:
     return int("".join("1" if b else "0" for b in bits), 2)
 
 
+def _interior_ratio(mask: np.ndarray) -> float:
+    """外周につながる領域（白背景・黒背景など意図的な単色背景）を除いた割合。"""
+    from scipy import ndimage
+    lab, _ = ndimage.label(mask)
+    border = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
+    border = border[border != 0]
+    return float((mask & ~np.isin(lab, border)).mean())
+
+
 def stats(img: Image.Image) -> dict[str, float]:
     hsv = _hsv(img)
     e = _edges(img)
@@ -111,7 +120,7 @@ def stats(img: Image.Image) -> dict[str, float]:
         "mean_value": float(hsv[..., 2].mean()), "mean_saturation": float(hsv[..., 1].mean()),
         "value_std": float(hsv[..., 2].std()), "edge_density": float((e > 40).mean()),
         "edge_strength": float(e.mean() / 255), "gray_std": float(g.std()),
-        "clipped_white": float((g >= 254).mean()), "clipped_black": float((g <= 1).mean()),
+        "clipped_white": _interior_ratio(g >= 254), "clipped_black": _interior_ratio(g <= 1),
         "hf_energy": float(np.abs(lap).mean() / 255), "mass_cx": cx, "mass_cy": cy,
     }
 
@@ -209,7 +218,7 @@ def evaluate(img: Image.Image, refs: list[Image.Image] | None = None,
         if s["gray_std"] < 6:
             issues.append("ほぼ単色（生成失敗の可能性）")
             pen += 0.8
-        if s["clipped_white"] > 0.6 or s["clipped_black"] > 0.4:
+        if s["clipped_white"] > 0.25 or s["clipped_black"] > 0.25:
             issues.append("白飛び/黒つぶれが広い")
             pen += 0.3
         base_hf = float(np.mean([r["hf_energy"] for r in rs])) if rs else 0.06
