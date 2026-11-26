@@ -59,7 +59,18 @@ def load_yaml(path: str | os.PathLike, default: Any = None) -> Any:
 
 
 def dump_yaml(path: str | os.PathLike, data: Any) -> None:
+    """先頭のコメント行（説明ヘッダ）は保持して書き戻す。"""
     text = yaml.safe_dump(data, allow_unicode=True, sort_keys=False, width=120)
+    p = Path(path)
+    if p.exists():
+        header = []
+        for line in p.read_text(encoding="utf-8").splitlines():
+            if line.startswith("#"):
+                header.append(line)
+            else:
+                break
+        if header:
+            text = "\n".join(header) + "\n" + text
     atomic_write_text(path, text)
 
 
