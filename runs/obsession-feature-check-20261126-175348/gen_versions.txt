@@ -1,0 +1,8 @@
+accelerate==1.16.0
+diffusers==0.43.0
+peft==0.22.0
+safetensors==0.8.0
+spandrel==0.4.2
+torch==2.15.0+cpu
+torchvision==0.29.2+cpu
+transformers==5.24.1

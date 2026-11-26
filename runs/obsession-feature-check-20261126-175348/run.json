@@ -1,0 +1,137 @@
+{
+  "run_id": "obsession-feature-check-20261126-175348",
+  "job_id": "obsession-feature-check",
+  "title": "Obsession 編集機能の検証（透過・表情差分・img2img・Outpaint）",
+  "status": "completed",
+  "backend": "diffusers",
+  "backend_info": {
+    "backend": "diffusers",
+    "diffusers": "0.43.0",
+    "torch": "2.15.0+cpu",
+    "device": "cpu",
+    "threads": 4,
+    "model_load_seconds": 86.0
+  },
+  "created_at": "2026-11-26T17:53:48+00:00",
+  "finished_at": "2026-11-26T20:57:07+00:00",
+  "elapsed_min": 133.76,
+  "models": [
+    {
+      "id": "obsession-illustrious-xl-v-pred-v1-1",
+      "kind": "checkpoint",
+      "sha256": "104b9362d2ab82797b6b26a7eed043b5fd042bec5ba00cccaf3d8ee08bb29b93",
+      "name": "Obsession (Illustrious-XL)",
+      "url": "https://civitai.com/models/820208?modelVersionId=1494740"
+    },
+    {
+      "id": "sdxl-base-1-0-config",
+      "kind": "pipeline_config",
+      "sha256": "6d7b93508390ab91ac5bfbe4aeb4dc2d83f7bb1b05fb069d714b5b0c75f70d44",
+      "name": "stabilityai/stable-diffusion-xl-base-1.0 (pipeline_config)",
+      "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/tree/462165984030d82259a11f4367a4eed129e94a7b"
+    }
+  ],
+  "errors_recovered": 0,
+  "fatal_error": null,
+  "stages": {
+    "cutout": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/cutout/r00_c0.png",
+        "score": 1.0,
+        "round": 0
+      },
+      "comparison": null,
+      "private_inputs": []
+    },
+    "expression_laugh": {
+      "status": "done",
+      "stop_reason": "max_rounds",
+      "best": {
+        "image": "stages/expression_laugh/r01_c0.png",
+        "score": 0.988,
+        "round": 1,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 5.0,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.55,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "prompt": "masterpiece, best quality, newest, general, 1girl, solo, short brown hair, laughing, open mouth, closed eyes, green hooded cloak"
+        }
+      },
+      "comparison": "comparisons/expression_laugh_latest.png",
+      "private_inputs": []
+    },
+    "autumn_variant": {
+      "status": "done",
+      "stop_reason": "max_rounds",
+      "best": {
+        "image": "stages/autumn_variant/r00_c0.png",
+        "score": 0.9713,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.45,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, red hooded cloak, short brown hair, smile, simple background, white background"
+        }
+      },
+      "comparison": null,
+      "private_inputs": []
+    },
+    "wider": {
+      "status": "done",
+      "stop_reason": "max_rounds",
+      "best": {
+        "image": "stages/wider/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 1216,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.9,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, simple background, white background"
+        }
+      },
+      "comparison": null,
+      "private_inputs": []
+    }
+  },
+  "publish": true,
+  "assign_to": {},
+  "approval": "unapproved（approvals/approvals.yaml でユーザーのみ変更）",
+  "has_private_inputs": false
+}
