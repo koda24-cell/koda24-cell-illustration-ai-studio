@@ -23,9 +23,15 @@ models:
       notes: 'Civitai フラグ: allowCommercialUse=[RentCivit] のみ（生成画像の販売 "Image" を含まない）, allowNoCredit=true, allowDerivatives=true,
         allowDifferentLicense=false。商用作品での利用可否は配布ページとベースモデル(Illustrious)の条件をユーザーが確認すること'
     strengths:
-      styles: []
-      content: []
-      source: 未記入（配布元記載 or 実生成結果から追記）
+      styles:
+      - anime
+      - soft painterly shading
+      - clean lineart
+      content:
+      - character
+      - full body
+      - expression
+      source: 実生成結果（2026-11-27 Actions 2 run）からの観察。配布元の記載は未確認
     recommended_settings:
       sampler: euler
       steps: 20
@@ -47,12 +53,21 @@ models:
       note: fp32・GitHub標準ランナー(4 vCPU)。モデル読込を含む1枚目。bfloat16 は69分経過でも1枚未完了のため不採用
       run: obsession-bench-fp32-20261126-155303
       actions: https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45852576694
+      by_operation:
+        txt2img_832x1216_20steps: 約40分（モデル読込 約1分は別）
+        inpaint_denoise0.55: 約13〜14分/枚
+        img2img_denoise0.45: 約20分/枚
+        outpaint_1216x1216: 約58分/枚
+        peak_memory: RSS 約15GB（16GB RAM + 追加スワップ12GBで安定。スワップ無しでは強制終了）
     results:
     - run: obsession-bench-fp32-20261126-155303
       candidate: stages/standing/r00_c0.png
       score: null
       date: '2026-11-27'
       note: 立ち絵・白背景。目視で破綻なし
+    - run: obsession-feature-check-20261126-175348
+      date: '2026-11-27'
+      note: 表情差分(inpaint)は自然に成功。img2img denoise 0.45 では衣装色変更（緑→赤）が反映されず。outpaint で正方形へ拡張成功
     allowed: true
   sdxl-base-1-0-config:
     name: stabilityai/stable-diffusion-xl-base-1.0 (pipeline_config)
