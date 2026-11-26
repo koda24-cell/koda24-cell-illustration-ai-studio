@@ -1,6 +1,9 @@
 name: produce
 # 制作ジョブの実行（最大6時間）。途中保存は studio-runs ブランチへ定期 push、再開可能。
 on:
+  push:
+    branches: [gpt/run-one-illustration-20261127]
+    paths: [.github/workflows/produce.yml]
   workflow_dispatch:
     inputs:
       job:
@@ -47,7 +50,7 @@ jobs:
       - name: Budget guard
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          TB: ${{ inputs.time_budget }}
+          TB: ${{ github.event_name == 'push' && '120' || inputs.time_budget }}
         run: |
           python -m studio budget-check --minutes "$(python -c "import os;print(min(float(os.environ['TB']),345)+15)")"
       - name: Checkout studio-runs branch (create if missing; never force)
@@ -66,7 +69,7 @@ jobs:
         id: job
         env:
           RESUME: ${{ inputs.resume_run_id }}
-          JOB_IN: ${{ inputs.job }}
+          JOB_IN: ${{ github.event_name == 'push' && 'jobs/gpt-dynamic-ruins-20261127.yaml' || inputs.job }}
         run: |
           if [ -n "$RESUME" ]; then
             python -c "import json,os,yaml;s=json.load(open(f'runs-branch/runs/{os.environ[\"RESUME\"]}/state.json'));yaml.safe_dump(s['job'],open('resume_job.yaml','w'),allow_unicode=True)"
@@ -121,8 +124,8 @@ jobs:
         env:
           STUDIO_INPUT_KEY: ${{ secrets.STUDIO_INPUT_KEY }}
           RESUME: ${{ inputs.resume_run_id }}
-          JOB_IN: ${{ inputs.job }}
-          TB: ${{ inputs.time_budget }}
+          JOB_IN: ${{ github.event_name == 'push' && 'jobs/gpt-dynamic-ruins-20261127.yaml' || inputs.job }}
+          TB: ${{ github.event_name == 'push' && '120' || inputs.time_budget }}
         run: |
           set +e
           if [ -n "$RESUME" ]; then
