@@ -21,7 +21,7 @@ from typing import Any
 
 from .util import StudioError, now_iso, sha256_file
 
-MAX_DB_AGE_HOURS = int(os.environ.get("STUDIO_CLAMAV_MAX_DB_AGE_HOURS", "48"))
+MAX_DB_AGE_HOURS = int(os.environ.get("STUDIO_CLAMAV_MAX_DB_AGE_HOURS", "96"))
 MAX_ARCHIVE_TOTAL = 20 * 1024**3
 MAX_ARCHIVE_RATIO = 200
 MAX_ARCHIVE_MEMBERS = 10000
