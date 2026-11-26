@@ -68,7 +68,8 @@ class DiffusersBackend:
         import diffusers
         import torch
         return {"backend": "diffusers", "diffusers": diffusers.__version__, "torch": torch.__version__,
-                "device": "cpu", "threads": torch.get_num_threads()}
+                "device": "cpu", "threads": torch.get_num_threads(),
+                "model_load_seconds": round(self.load_seconds, 1)}
 
     # ---------- 読込 ----------
     def _config_dir(self, arch: str, explicit: str | None) -> str:

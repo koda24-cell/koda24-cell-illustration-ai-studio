@@ -62,6 +62,9 @@ jobs:
           path: .cache/studio/models
           key: models-${{ hashFiles('allowlist/models.yaml') }}
           restore-keys: models-
+      - name: Prepare ClamAV DB dir (cache restore needs write access)
+        if: steps.size.outputs.empty != 'true'
+        run: sudo mkdir -p /var/lib/clamav && sudo chown -R "$USER" /var/lib/clamav
       - name: Restore ClamAV DB
         if: steps.size.outputs.empty != 'true'
         uses: actions/cache@v4
