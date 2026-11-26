@@ -140,3 +140,11 @@ def test_private_derivatives_not_published(tmp_path, test_images):
 
 def test_workflows_use_free_runners_only():
     assert lint_workflows() == []
+
+
+def test_stage_level_limits(tmp_path):
+    j = job(stages=[{"name": "a", "op": "txt2img", "prompt": "p", "limits": {"max_rounds": 1, "candidates_per_round": 1}},
+                    {"name": "b", "op": "txt2img", "prompt": "p"}])
+    st = Session(j, Allowlist.load(), runs_dir=tmp_path, run_id="r").run()
+    assert len(st["stages"]["a"]["rounds"]) == 1 and len(st["stages"]["a"]["rounds"][0]["candidates"]) == 1
+    assert len(st["stages"]["b"]["rounds"]) == 3

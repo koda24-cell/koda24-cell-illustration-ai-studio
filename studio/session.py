@@ -273,7 +273,7 @@ class Session:
         return op, inputs
 
     def _run_generative(self, stage: dict[str, Any], ss: dict[str, Any]) -> str:
-        lim = self.job["limits"]
+        lim = {**self.job["limits"], **(stage.get("limits") or {})}  # ステージ単位の上書き可
         ss["name"] = stage["name"]
         params = ss.get("next_params") or jobspec.stage_params(self.job, stage)
         if params.get("seed") in (None, "random"):

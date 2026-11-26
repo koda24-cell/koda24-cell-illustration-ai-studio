@@ -1,0 +1,47 @@
+# Obsession v-pred で編集系機能を実機検証（計測 run の立ち絵を起点に再利用）
+# 背景透過 / 表情差分（Inpaint＋改善ループ2ラウンド）/ 参考画像からの生成（img2img）/ 範囲拡張（Outpaint）
+job_id: obsession-feature-check
+title: Obsession 編集機能の検証（透過・表情差分・img2img・Outpaint）
+backend: diffusers
+time_budget_minutes: 330
+publish: true
+limits: {max_rounds: 2, candidates_per_round: 2, patience: 2, target_score: 1.5, max_error_retries: 3}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  scheduler: euler
+  steps: 20
+  cfg: 4.5
+  seed: 20261127
+  negative_prompt: "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature"
+evaluation:
+  metrics: [similarity, consistency, composition, artifacts]
+improve: {enabled: true, tune: [cfg, denoise]}
+stages:
+  - name: cutout
+    op: remove_bg
+    init: "run:obsession-bench-fp32-20261126-155303/standing"
+  - name: expression_laugh
+    op: inpaint
+    init: "run:obsession-bench-fp32-20261126-155303/standing"
+    mask: {rect: [0.38, 0.08, 0.24, 0.16], feather: 12}
+    consistency_base: "run:obsession-bench-fp32-20261126-155303/standing"
+    denoise: 0.55
+    prompt: "masterpiece, best quality, newest, general, 1girl, solo, short brown hair, laughing, open mouth, closed eyes, green hooded cloak"
+  - name: autumn_variant
+    op: img2img
+    init: "run:obsession-bench-fp32-20261126-155303/standing"
+    consistency_base: "run:obsession-bench-fp32-20261126-155303/standing"
+    denoise: 0.45
+    limits: {max_rounds: 1, candidates_per_round: 1}
+    prompt: "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, red hooded cloak, short brown hair, smile, simple background, white background"
+  - name: wider
+    op: outpaint
+    init: "stage:cutout"
+    outpaint: {left: 192, right: 192}
+    limits: {max_rounds: 1, candidates_per_round: 1}
+    prompt: "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, simple background, white background"
