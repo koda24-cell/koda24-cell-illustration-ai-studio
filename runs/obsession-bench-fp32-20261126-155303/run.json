@@ -1,0 +1,69 @@
+{
+  "run_id": "obsession-bench-fp32-20261126-155303",
+  "job_id": "obsession-bench-fp32",
+  "title": "Obsession v-pred 動作確認（fp32, 832x1216, 20 steps）",
+  "status": "completed",
+  "backend": "diffusers",
+  "backend_info": {
+    "backend": "diffusers",
+    "diffusers": "0.43.0",
+    "torch": "2.15.0+cpu",
+    "device": "cpu",
+    "threads": 4
+  },
+  "created_at": "2026-11-26T15:53:03+00:00",
+  "finished_at": "2026-11-26T16:34:18+00:00",
+  "elapsed_min": 41.28,
+  "models": [
+    {
+      "id": "obsession-illustrious-xl-v-pred-v1-1",
+      "kind": "checkpoint",
+      "sha256": "104b9362d2ab82797b6b26a7eed043b5fd042bec5ba00cccaf3d8ee08bb29b93",
+      "name": "Obsession (Illustrious-XL)",
+      "url": "https://civitai.com/models/820208?modelVersionId=1494740"
+    },
+    {
+      "id": "sdxl-base-1-0-config",
+      "kind": "pipeline_config",
+      "sha256": "6d7b93508390ab91ac5bfbe4aeb4dc2d83f7bb1b05fb069d714b5b0c75f70d44",
+      "name": "stabilityai/stable-diffusion-xl-base-1.0 (pipeline_config)",
+      "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/tree/462165984030d82259a11f4367a4eed129e94a7b"
+    }
+  ],
+  "errors_recovered": 0,
+  "fatal_error": null,
+  "stages": {
+    "standing": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/standing/r00_c0.png",
+        "score": 0.775,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.5,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, short brown hair, smile, simple background, white background"
+        }
+      },
+      "comparison": null,
+      "private_inputs": []
+    }
+  },
+  "publish": true,
+  "assign_to": {},
+  "approval": "unapproved（approvals/approvals.yaml でユーザーのみ変更）",
+  "has_private_inputs": false
+}
