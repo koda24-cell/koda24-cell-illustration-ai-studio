@@ -7,3 +7,5 @@
 {"t": "2026-11-26T19:37:35+00:00", "event": "stage_done", "stage": "expression_laugh", "mem_available_mb": 14757, "swap_free_mb": 15359, "vmhwm_mb": 56, "vmrss_mb": 52}
 {"t": "2026-11-26T19:37:36+00:00", "event": "checkpoint", "exit_code": 0, "stderr": ""}
 {"t": "2026-11-26T19:37:38+00:00", "event": "candidate_start", "stage": "autumn_variant", "round": 0, "candidate": 0, "mem_available_mb": 14669, "swap_free_mb": 15359, "vmhwm_mb": 299, "vmrss_mb": 299}
+{"t": "2026-11-26T19:58:54+00:00", "event": "checkpoint", "exit_code": 0, "stderr": ""}
+{"t": "2026-11-26T19:58:54+00:00", "event": "round_done", "stage": "autumn_variant", "round": 0, "best_score": 0.9713, "improved": true, "changes": ["cfg: 4.5 → 5（探索）"], "mem_available_mb": 2942, "swap_free_mb": 10197, "vmhwm_mb": 14995, "vmrss_mb": 12018}

@@ -244,12 +244,86 @@
     },
     "autumn_variant": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 832,
+            "height": 1216,
+            "steps": 20,
+            "cfg": 4.5,
+            "scheduler": "euler",
+            "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+            "denoise": 0.45,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 20261127,
+            "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, red hooded cloak, short brown hair, smile, simple background, white background"
+          },
+          "candidates": [
+            {
+              "image": "stages/autumn_variant/r00_c0.png",
+              "score": 0.9713,
+              "seconds": 1190.410565853119
+            }
+          ],
+          "best": "stages/autumn_variant/r00_c0.png",
+          "best_score": 0.9713,
+          "next_changes": [
+            "cfg: 4.5 → 5（探索）"
+          ]
+        }
+      ],
       "private_inputs": [],
       "name": "autumn_variant",
       "base_seed": 20261127,
       "sec_per_candidate": 1190.410565853119,
-      "n_done": 1
+      "n_done": 1,
+      "best": {
+        "image": "stages/autumn_variant/r00_c0.png",
+        "score": 0.9713,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.45,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, red hooded cloak, short brown hair, smile, simple background, white background"
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/autumn_variant/r00_c0.png",
+      "next_params": {
+        "width": 832,
+        "height": 1216,
+        "steps": 20,
+        "cfg": 5.0,
+        "scheduler": "euler",
+        "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+        "denoise": 0.45,
+        "model": "obsession-illustrious-xl-v-pred-v1-1",
+        "pipeline_config": "sdxl-base-1-0-config",
+        "prediction_type": "v_prediction",
+        "zero_terminal_snr": true,
+        "guidance_rescale": 0.7,
+        "dtype": "float32",
+        "seed": 20261127,
+        "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, red hooded cloak, short brown hair, smile, simple background, white background"
+      }
     }
   },
   "errors_recovered": 0,
@@ -264,5 +338,5 @@
       "resumed": true
     }
   ],
-  "elapsed_total_min": 75.52
+  "elapsed_total_min": 75.54
 }
