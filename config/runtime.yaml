@@ -2,6 +2,6 @@
 # イメージの更新手順: Dockerfile / requirements を変更 → build-image が GHCR に公開 → 出力された digest をここへ PR で反映。
 image: ghcr.io/koda24-cell/illustration-ai-studio-cpu
 tag: cpu-v1
-digest: ""          # build-image 実行後に sha256:... を記入（空の間は tag を使用）
+digest: sha256:27e0eba5b7f8bed255649f519494285495522df2ef388ff88b3e9988d6e4f030   # build-image run 45905570703（空なら tag を使用）
 swap_gb: 12          # SDXL fp32 のピーク約15GB対策（ホストに追加）
 max_chain: 3         # 時間切れ時の自動引き継ぎ（再開ジョブ）の最大回数

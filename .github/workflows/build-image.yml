@@ -72,3 +72,12 @@ jobs:
           bash scripts/in_image.sh python -m studio selftest --runs-dir /tmp/runs --run-id image-smoke
           bash scripts/in_image.sh clamscan --version
           bash scripts/in_image.sh bash scripts/clamav_update.sh
+      - name: Visibility check (anonymous pull)
+        run: |
+          docker logout ghcr.io >/dev/null 2>&1 || true
+          if docker manifest inspect ghcr.io/koda24-cell/illustration-ai-studio-cpu:cpu-v1 >/dev/null 2>&1; then
+            echo "GHCR package is PUBLIC（無料・認証なしで取得可）" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::GHCR package is PRIVATE。無料枠（Private パッケージの容量）を消費するため Public に設定してください"
+            echo "GHCR package is PRIVATE" >> "$GITHUB_STEP_SUMMARY"
+          fi
