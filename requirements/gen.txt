@@ -1,0 +1,10 @@
+# 生成環境（CPU）。torch は CPU 版ホイールを使う（GPU 版は不要・大容量）。
+# 実際に解決されたバージョンは各ランの run.json / Actions ログに記録する。
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.4
+diffusers>=0.32
+transformers>=4.46
+accelerate>=1.0
+safetensors>=0.4.5
+peft>=0.13
+spandrel>=0.4

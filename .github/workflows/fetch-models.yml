@@ -1,0 +1,108 @@
+name: fetch-models
+# 許可リストに登録済みのモデルだけを取得 → ClamAV 検査 → SHA256 照合 → actions/cache に保存。
+# 許可リストが空なら何も取得しない。
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "取得するモデルID（空白区切り・空なら全許可モデル）"
+        required: false
+        default: ""
+  push:
+    branches: [main]
+    paths: [allowlist/models.yaml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fetch-models
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      STUDIO_CACHE: ${{ github.workspace }}/.cache/studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/base.txt
+      - run: pip install -r requirements/base.txt
+      - run: python -m studio allowlist-check
+      - name: Budget guard
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        run: python -m studio budget-check --minutes 120
+      - name: Size check (cache soft limit)
+        id: size
+        run: |
+          python - <<'EOF' >> "$GITHUB_OUTPUT"
+          from studio.allowlist import Allowlist
+          from studio.util import load_yaml
+          al = Allowlist.load()
+          total = sum(int(f.get("size_bytes") or 0) for m in al.models.values() for f in m.files)
+          lim = load_yaml("config/budget.yaml")["cache_soft_limit_gb"] * 1024**3
+          print(f"empty={'true' if not al.models else 'false'}")
+          print(f"cacheable={'true' if total <= lim else 'false'}")
+          print(f"total_gb={total/1024**3:.2f}")
+          EOF
+      - name: Nothing to fetch
+        if: steps.size.outputs.empty == 'true'
+        run: echo "許可リストが空のため取得しません（モデルを指定してください）" >> "$GITHUB_STEP_SUMMARY"
+      - run: bash scripts/free_disk.sh
+        if: steps.size.outputs.empty != 'true'
+      - name: Restore model cache
+        if: steps.size.outputs.empty != 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/studio/models
+          key: models-${{ hashFiles('allowlist/models.yaml') }}
+          restore-keys: models-
+      - name: Restore ClamAV DB
+        if: steps.size.outputs.empty != 'true'
+        uses: actions/cache@v4
+        with:
+          path: /var/lib/clamav
+          key: clamav-db-${{ github.run_id }}
+          restore-keys: clamav-db-
+      - run: bash scripts/setup_clamav.sh
+        if: steps.size.outputs.empty != 'true'
+      - name: Fetch allowlisted models (scan → hash → cache)
+        if: steps.size.outputs.empty != 'true'
+        env:
+          CIVITAI_API_TOKEN: ${{ secrets.CIVITAI_API_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -m studio models-fetch ${{ inputs.only && format('--only {0}', inputs.only) || '' }} --report fetch_report.json
+      - name: Verify
+        if: steps.size.outputs.empty != 'true'
+        run: python -m studio models-verify
+      - name: Save model cache
+        if: steps.size.outputs.empty != 'true' && steps.size.outputs.cacheable == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/studio/models
+          key: models-${{ hashFiles('allowlist/models.yaml') }}
+      - name: Report
+        if: always() && steps.size.outputs.empty != 'true'
+        run: |
+          echo "### fetch-models (${{ steps.size.outputs.total_gb }} GB, cacheable=${{ steps.size.outputs.cacheable }})" >> "$GITHUB_STEP_SUMMARY"
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          r = json.load(open("fetch_report.json")) if os.path.exists("fetch_report.json") else {"results": []}
+          for x in r["results"]:
+              print(f"- `{x['id']}` {x['file']}: **{x['status']}** {x.get('error','')}")
+          EOF
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.size.outputs.empty != 'true'
+        with:
+          name: fetch-report
+          path: |
+            fetch_report.json
+            .cache/studio/models/*/scan_manifest.json
+            .cache/studio/models/*/clamscan_1.log
+          retention-days: 30

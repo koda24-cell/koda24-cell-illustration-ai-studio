@@ -1,0 +1,6 @@
+# 使用許可画像（参考画像・学習用画像・評価用画像・初期画像・マスク・ControlNet入力・背景）
+# - 初期状態は空。ユーザーが指定した画像だけを登録する。
+# - public_ok: false の画像は公開リポジトリに平文で置かない（encrypted_path を使う）。サイトにも出さない。
+# - 登録手順: docs/MODEL_REGISTRATION.md の「画像の登録」
+version: 1
+images: []

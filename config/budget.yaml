@@ -1,0 +1,8 @@
+# 費用ガード（追加課金ゼロを守るための自主上限）
+# - Public リポジトリの標準ランナーは無料。Private の場合は月の無料分（Free プランで 2,000 分、
+#   アカウント全体で共有）を超えないよう、このリポジトリ分の上限をここで決める。
+# - GitHub 側の「支出上限 $0」（Settings > Billing）も必ず維持すること（最終防衛線）。
+private_monthly_minutes_cap: 1200   # Private 時: このリポジトリで使ってよい月間分数
+max_job_minutes: 355                 # 1ジョブの上限（GitHub の 6時間上限より短く）
+cache_soft_limit_gb: 9               # actions/cache はリポジトリあたり 10GB。超えそうならキャッシュしない
+allowed_runner_labels: ["ubuntu-latest", "ubuntu-24.04", "ubuntu-22.04"]  # 有料/GPU ランナーは禁止

@@ -1,0 +1,4 @@
+# 採用判断（ユーザーのみ編集）。AI は status を「承認」にしない。
+# キー: "<run_id>/<stage>"
+# status: 承認 | 却下 | 未承認   assigned_to: 使用予定の作品・割当先（例: "kotama-no-bouken:主人公立ち絵"）
+approvals: {}
