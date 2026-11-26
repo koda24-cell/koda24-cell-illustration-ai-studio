@@ -308,6 +308,15 @@
       "no_improve": 0,
       "first_best": "stages/autumn_variant/r00_c0.png",
       "stop_reason": "max_rounds"
+    },
+    "wider": {
+      "status": "pending",
+      "rounds": [],
+      "private_inputs": [],
+      "name": "wider",
+      "base_seed": 20261127,
+      "sec_per_candidate": 3485.8086807727814,
+      "n_done": 1
     }
   },
   "errors_recovered": 0,
@@ -322,5 +331,5 @@
       "resumed": true
     }
   ],
-  "elapsed_total_min": 75.56
+  "elapsed_total_min": 133.68
 }

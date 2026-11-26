@@ -1,0 +1,70 @@
+{
+  "run_id": "obsession-feature-check-20261126-175348",
+  "stage": "wider",
+  "round": 0,
+  "candidate": 0,
+  "op": "outpaint",
+  "params": {
+    "width": 1216,
+    "height": 1216,
+    "steps": 20,
+    "cfg": 4.5,
+    "scheduler": "euler",
+    "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+    "denoise": 0.9,
+    "model": "obsession-illustrious-xl-v-pred-v1-1",
+    "pipeline_config": "sdxl-base-1-0-config",
+    "prediction_type": "v_prediction",
+    "zero_terminal_snr": true,
+    "guidance_rescale": 0.7,
+    "dtype": "float32",
+    "seed": 20261127,
+    "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, simple background, white background"
+  },
+  "seconds": 3485.81,
+  "load_seconds": 0.0,
+  "evaluation": {
+    "overall": 1.0,
+    "metrics": {
+      "composition": {
+        "score": 1.0,
+        "rationale": "視覚的重心 (0.50,0.51)。極端な偏りのみ減点",
+        "limitations": "エッジ量の重心と余白の偏り。主題の認識はしていない。",
+        "values": {
+          "cx": 0.5034,
+          "cy": 0.5059
+        }
+      },
+      "similarity": {
+        "score": null,
+        "rationale": "参考画像なし",
+        "limitations": "縮小グレースケールのSSIMと知覚ハッシュ。構図・形の近さで、絵柄の近さとは別。",
+        "values": {}
+      },
+      "artifacts": {
+        "score": 1.0,
+        "rationale": "兆候: 検出なし",
+        "limitations": "空白・極端な白飛び/黒つぶれ（外周につながる単色背景は除外）・高周波ノイズの兆候のみ。手指や人体の破綻は検出できない。",
+        "values": {
+          "issues": [],
+          "hf_energy": 0.0238,
+          "clipped_white": 0.0008,
+          "clipped_black": 0.0
+        }
+      },
+      "consistency": {
+        "score": null,
+        "rationale": "基準画像なし",
+        "limitations": "基準画像との配色・トーンの近さ（同一キャラの代理指標）。顔や体型の同一性は見ていない。",
+        "values": {}
+      }
+    },
+    "weights_used": {
+      "composition": 0.5,
+      "artifacts": 1.5
+    },
+    "note": "自動評価は制作途中の改善用の参考値。美術的な完成度の判定や採用判断ではない。"
+  },
+  "created_at": "2026-11-26T20:57:03+00:00",
+  "backend": "diffusers"
+}
