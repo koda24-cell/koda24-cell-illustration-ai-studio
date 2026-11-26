@@ -1,0 +1,2 @@
+{"t": "2026-11-26T14:38:11+00:00", "event": "session_start", "resumed": false, "remaining_min": 10.0}
+{"t": "2026-11-26T14:38:11+00:00", "event": "round_done", "stage": "base", "round": 0, "best_score": 1.0, "improved": true, "changes": ["cfg: 7 → 7.5（探索）"]}
