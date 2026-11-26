@@ -1,0 +1,29 @@
+# Docker 化前後の速度比較用。設定を変えずに各環境で実行する（2枚目は seed+1）
+job_id: speed-1img-docker-sdpa
+title: 速度切り分け（Docker・SDPAのみ、channels_lastなし、1枚）
+backend: diffusers
+time_budget_minutes: 150
+publish: true
+limits: {max_rounds: 1, candidates_per_round: 1, patience: 1, target_score: 1.5}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  attention_slicing: false
+  scheduler: euler
+  width: 832
+  height: 1216
+  steps: 20
+  cfg: 4.5
+  seed: 20261127
+  negative_prompt: "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature"
+evaluation:
+  metrics: [composition, artifacts]
+improve: {enabled: false, tune: []}
+stages:
+  - name: standing
+    op: txt2img
+    prompt: "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, short brown hair, smile, simple background, white background"
