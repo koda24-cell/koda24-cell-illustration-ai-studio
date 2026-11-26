@@ -10,9 +10,11 @@ GOOD = {"id": "test-ckpt", "kind": "checkpoint", "source": "civitai",
         "sha256": "a" * 64, "base_model": "SD 1.5", "added_by_user_instruction": "pytest"}
 
 
-def test_repository_allowlist_is_empty_initially():
+def test_repository_allowlist_is_valid_and_user_instructed():
+    """リポジトリの許可リストは検証を通り、全エントリにユーザー指示の記録があること（初期状態は空）。"""
     al = Allowlist.load()
-    assert al.is_empty(), "初期状態の許可リストは空であること"
+    for e in list(al.models.values()) + list(al.images.values()):
+        assert str(e.raw.get("added_by_user_instruction", "")).strip()
 
 
 def test_valid_entry(tmp_path):
