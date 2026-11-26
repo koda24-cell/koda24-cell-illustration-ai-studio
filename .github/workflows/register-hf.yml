@@ -1,0 +1,54 @@
+name: register-hf
+# ユーザーが承認した Hugging Face の依存ファイル（構成ファイル・画像エンコーダ等）を、
+# コミット固定・SHA256固定で許可リストの下書きにしてブランチへ push する（main へ直接書かない）。
+on:
+  workflow_dispatch:
+    inputs:
+      repo: {description: "HF リポジトリ（例 stabilityai/stable-diffusion-xl-base-1.0）", required: true}
+      preset: {description: "sdxl-config / sd15-config（空なら files を使用）", required: false, default: ""}
+      files: {description: "ファイルパス（空白区切り）", required: false, default: ""}
+      kind: {description: "種類", required: false, default: pipeline_config}
+      arch: {description: "sdxl / sd15（pipeline_config 用）", required: false, default: ""}
+      id: {description: "許可リストID", required: true}
+      note: {description: "ユーザー指示の記録", required: true}
+
+permissions:
+  contents: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip, cache-dependency-path: requirements/base.txt }
+      - run: pip install -r requirements/base.txt
+      - name: Draft entry
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          REPO: ${{ inputs.repo }}
+          PRESET: ${{ inputs.preset }}
+          FILES: ${{ inputs.files }}
+          KIND: ${{ inputs.kind }}
+          ARCH: ${{ inputs.arch }}
+          ID: ${{ inputs.id }}
+          NOTE: ${{ inputs.note }}
+        run: |
+          args=(--repo "$REPO" --kind "$KIND" --id "$ID" --append
+                --instruction "$(date -u +%F) GitHub Actions register-hf 実行者 ${{ github.actor }}: $NOTE")
+          [ -n "$PRESET" ] && args+=(--preset "$PRESET")
+          [ -n "$FILES" ] && args+=(--files $FILES)
+          [ -n "$ARCH" ] && args+=(--arch "$ARCH")
+          python -m studio allowlist-draft-hf "${args[@]}"
+          python -m studio allowlist-check
+          python -m studio ledger-sync
+      - name: Push branch
+        env: { ID: "${{ inputs.id }}" }
+        run: |
+          br="allowlist/${ID}-${{ github.run_id }}"
+          git checkout -b "$br"
+          git -c user.name="studio-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -am "allowlist: add ${ID} (user-approved dependency, by ${{ github.actor }})"
+          git push origin "$br"
+          echo "ブランチ \`$br\` を作成しました。PR を作成してマージしてください。" >> "$GITHUB_STEP_SUMMARY"

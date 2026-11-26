@@ -61,6 +61,14 @@ pipeline_config の例:
 ```
 （`filename` はキャッシュ内のファイル名。同名ファイルが複数ある場合は `filename` を変えて `repo_path` で配置先を指定）
 
+### HF 依存ファイルの登録（ユーザー承認後）
+Actions → **register-hf**（`repo`, `preset: sdxl-config` 等, `id`, `note`）→ 作成されたブランチを PR → マージ。
+CLI: `python -m studio allowlist-draft-hf --repo stabilityai/stable-diffusion-xl-base-1.0 --preset sdxl-config --arch sdxl --id sdxl-base-1-0-config --instruction "..." --append`
+
+### v-prediction 系 Checkpoint
+Illustrious/NoobAI の v-pred 版などは、ジョブの生成設定に `prediction_type: v_prediction`・`zero_terminal_snr: true`（推奨 `guidance_rescale: 0.7`）を指定する。
+取得時の safetensors 検査で `v_pred` / `ztsnr` キーの有無を `scan_manifest.json` の `special_keys` に記録する（判断材料）。
+
 ## 4. モデル台帳（catalog/model_ledger.yaml）
 `ledger-sync` で許可済みモデルの枠を作成します（既存の記入は上書きしない）。項目:
 モデル名・バージョン・配布元URL・作者・ファイル形式・容量・SHA256・商用利用条件・得意な絵柄・得意な生成内容・

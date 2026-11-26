@@ -46,6 +46,26 @@ def cmd_allowlist_draft(a) -> int:
     return 0
 
 
+def cmd_allowlist_draft_hf(a) -> int:
+    from . import hfhub
+    from .util import dump_yaml
+    if not a.instruction.strip():
+        raise StudioError("BAD_INPUT", "--instruction（ユーザー指示の記録）が必須")
+    files = hfhub.PRESETS[a.preset] if a.preset else a.files
+    if not files:
+        raise StudioError("BAD_INPUT", "--files か --preset が必要")
+    draft = hfhub.build_entry_draft(a.repo, files, a.kind, a.id, a.instruction, a.revision, a.arch)
+    print(yaml.safe_dump([draft], allow_unicode=True, sort_keys=False))
+    if a.append:
+        data = load_yaml(MODELS_FILE, {"version": 1, "models": []})
+        if any(m.get("id") == draft["id"] for m in data.get("models") or []):
+            raise StudioError("BAD_INPUT", f"id {draft['id']} は登録済み（自動置換しません）")
+        data.setdefault("models", []).append(draft)
+        dump_yaml(MODELS_FILE, data)
+        Allowlist.load()
+    return 0
+
+
 def cmd_models_fetch(a) -> int:
     al = Allowlist.load()
     if not al.models:
@@ -191,6 +211,12 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--kind"); s.add_argument("--file-id", type=int); s.add_argument("--id")
     s.add_argument("--append", action="store_true", help="models.yaml に追記（ユーザー指示がある場合のみ）")
     s.set_defaults(f=cmd_allowlist_draft)
+    s = sub.add_parser("allowlist-draft-hf", help="ユーザー承認済みのHF依存ファイルを登録下書きにする")
+    s.add_argument("--repo", required=True); s.add_argument("--revision", default="main")
+    s.add_argument("--files", nargs="*"); s.add_argument("--preset", choices=["sdxl-config", "sd15-config"])
+    s.add_argument("--kind", default="pipeline_config"); s.add_argument("--arch"); s.add_argument("--id", required=True)
+    s.add_argument("--instruction", required=True); s.add_argument("--append", action="store_true")
+    s.set_defaults(f=cmd_allowlist_draft_hf)
     s = sub.add_parser("models-fetch"); s.add_argument("--only", nargs="*")
     s.add_argument("--report", default="model_fetch_report.json"); s.set_defaults(f=cmd_models_fetch)
     s = sub.add_parser("models-verify"); s.set_defaults(f=cmd_models_verify)

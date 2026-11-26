@@ -117,3 +117,31 @@ def test_fetch_unlisted_refused(fake_env):
     al, _, _ = fake_env
     with pytest.raises(StudioError):
         fetch.fetch_all(al, ["not-listed"])
+
+
+def test_large_file_scanned_in_chunks(monkeypatch, tmp_path):
+    import subprocess as sp
+    monkeypatch.setattr(scan, "require_clamav", lambda: {"version_string": "fake", "db_age_hours": 1})
+    monkeypatch.setattr(scan, "CHUNK_THRESHOLD", 1000)
+    monkeypatch.setattr(scan, "CHUNK_SIZE", 400)
+    monkeypatch.setattr(scan, "CHUNK_OVERLAP", 10)
+    seen = []
+
+    def fake_run(paths):
+        seen.append(paths[0].stat().st_size)
+        return sp.CompletedProcess([], 0, "", "")
+
+    monkeypatch.setattr(scan, "_run_clamscan", fake_run)
+    p = tmp_path / "big.safetensors"
+    p.write_bytes(b"x" * 1500)
+    r = scan.clamscan([p])
+    assert r["status"] == "SAFETY_CHECK_OK"
+    assert r["methods"][0]["method"] == "chunked" and r["methods"][0]["chunks"] == 4
+    assert seen == [410, 410, 410, 300]
+    assert not any(x.name.startswith(".scan-chunks") for x in tmp_path.iterdir())
+
+    def detect(paths):
+        return sp.CompletedProcess([], 1, f"{paths[0]}: Eicar FOUND\n", "")
+
+    monkeypatch.setattr(scan, "_run_clamscan", detect)
+    assert scan.clamscan([p])["status"] == "QUARANTINED_DETECTION"
