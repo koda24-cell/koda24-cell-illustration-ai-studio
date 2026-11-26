@@ -132,6 +132,8 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           t0=$(date +%s)
+          # キャッシュ復元後は毎回 SHA256 を全量照合する（キャッシュ内の検証済み印は信用しない）
+          find .cache/studio/models -name .verified -delete 2>/dev/null || true
           if bash scripts/in_image.sh python -m studio models-verify > verify.json; then
             echo "fetched=false" >> "$GITHUB_OUTPUT"
             echo "{\"mark\":\"model_verify_sha256\",\"seconds\":$(( $(date +%s) - t0 ))}" >> "$MARKS"
