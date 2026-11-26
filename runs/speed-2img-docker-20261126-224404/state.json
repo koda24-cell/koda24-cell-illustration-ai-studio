@@ -53,12 +53,89 @@
   "stages": {
     "standing": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 832,
+            "height": 1216,
+            "steps": 20,
+            "cfg": 4.5,
+            "scheduler": "euler",
+            "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+            "denoise": 0.5,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 20261127,
+            "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, short brown hair, smile, simple background, white background"
+          },
+          "candidates": [
+            {
+              "image": "stages/standing/r00_c0.png",
+              "score": 1.0,
+              "seconds": 2293.071933746338
+            },
+            {
+              "image": "stages/standing/r00_c1.png",
+              "score": 1.0,
+              "seconds": 2192.499285697937
+            }
+          ],
+          "best": "stages/standing/r00_c0.png",
+          "best_score": 1.0,
+          "next_changes": []
+        }
+      ],
       "private_inputs": [],
       "name": "standing",
       "base_seed": 20261127,
-      "sec_per_candidate": 2293.071933746338,
-      "n_done": 1
+      "sec_per_candidate": 2242.7856097221375,
+      "n_done": 2,
+      "best": {
+        "image": "stages/standing/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.5,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, short brown hair, smile, simple background, white background"
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/standing/r00_c0.png",
+      "next_params": {
+        "width": 832,
+        "height": 1216,
+        "steps": 20,
+        "cfg": 4.5,
+        "scheduler": "euler",
+        "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+        "denoise": 0.5,
+        "model": "obsession-illustrious-xl-v-pred-v1-1",
+        "pipeline_config": "sdxl-base-1-0-config",
+        "prediction_type": "v_prediction",
+        "zero_terminal_snr": true,
+        "guidance_rescale": 0.7,
+        "dtype": "float32",
+        "seed": 20261127,
+        "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, short brown hair, smile, simple background, white background"
+      }
     }
   },
   "errors_recovered": 0,
@@ -71,5 +148,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 38.94
+  "elapsed_total_min": 75.61
 }
