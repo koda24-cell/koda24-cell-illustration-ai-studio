@@ -90,7 +90,8 @@ class DiffusersBackend:
         from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline
 
         ckpt = self.al.require_model(p["model"], {"checkpoint"})
-        key = (ckpt.id, p.get("vae"), p.get("pipeline_config"), p.get("dtype"))
+        key = (ckpt.id, p.get("vae"), p.get("pipeline_config"), p.get("dtype"), p.get("attention_slicing", True),
+               p.get("channels_last"))
         if self._base is not None and self._base_key == key:
             return self._base
         t0 = time.time()
@@ -112,7 +113,11 @@ class DiffusersBackend:
         pipe = cls.from_single_file(str(path), **kw)
         pipe.set_progress_bar_config(disable=True)
         try:
-            pipe.enable_attention_slicing()
+            # attention_slicing: 互換のため既定 True。False で PyTorch SDPA（同一画質・高速化の可能性）
+            if p.get("attention_slicing", True):
+                pipe.enable_attention_slicing()
+            if p.get("channels_last"):
+                pipe.unet.to(memory_format=torch.channels_last)
             if arch == "sdxl" and p.get("vae_tiling", True):
                 pipe.enable_vae_tiling()  # CPU メモリ節約
         except Exception:  # noqa: BLE001
