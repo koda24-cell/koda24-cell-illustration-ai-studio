@@ -52,7 +52,7 @@
   "status": "running",
   "stages": {
     "standing": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -119,23 +119,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/standing/r00_c0.png",
-      "next_params": {
-        "width": 832,
-        "height": 1216,
-        "steps": 20,
-        "cfg": 4.5,
-        "scheduler": "euler",
-        "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
-        "denoise": 0.5,
-        "model": "obsession-illustrious-xl-v-pred-v1-1",
-        "pipeline_config": "sdxl-base-1-0-config",
-        "prediction_type": "v_prediction",
-        "zero_terminal_snr": true,
-        "guidance_rescale": 0.7,
-        "dtype": "float32",
-        "seed": 20261127,
-        "prompt": "masterpiece, best quality, newest, general, 1girl, solo, full body, standing, green hooded cloak, short brown hair, smile, simple background, white background"
-      }
+      "stop_reason": "single_pass"
     }
   },
   "errors_recovered": 0,
@@ -148,5 +132,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 75.61
+  "elapsed_total_min": 75.63
 }
