@@ -62,7 +62,7 @@ def normalize(job: dict[str, Any]) -> dict[str, Any]:
 
 
 def stage_params(job: dict[str, Any], stage: dict[str, Any]) -> dict[str, Any]:
-    keys_skip = {"name", "op", "init", "mask", "background", "consistency_base", "scale", "outpaint"}
+    keys_skip = {"name", "op", "init", "mask", "background", "consistency_base", "scale", "outpaint", "limits"}
     p = copy.deepcopy(job["defaults"])
     for k, v in stage.items():
         if k not in keys_skip:
