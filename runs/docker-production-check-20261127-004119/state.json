@@ -157,12 +157,86 @@
     },
     "expression_surprised": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 832,
+            "height": 1216,
+            "steps": 20,
+            "cfg": 4.5,
+            "scheduler": "euler",
+            "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+            "denoise": 0.55,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 20261201,
+            "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
+          },
+          "candidates": [
+            {
+              "image": "stages/expression_surprised/r00_c0.png",
+              "score": 0.9818,
+              "seconds": 1026.5610909461975
+            }
+          ],
+          "best": "stages/expression_surprised/r00_c0.png",
+          "best_score": 0.9818,
+          "next_changes": [
+            "cfg: 4.5 → 5（探索）"
+          ]
+        }
+      ],
       "private_inputs": [],
       "name": "expression_surprised",
       "base_seed": 20261201,
       "sec_per_candidate": 1026.5610909461975,
-      "n_done": 1
+      "n_done": 1,
+      "best": {
+        "image": "stages/expression_surprised/r00_c0.png",
+        "score": 0.9818,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.55,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261201,
+          "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/expression_surprised/r00_c0.png",
+      "next_params": {
+        "width": 832,
+        "height": 1216,
+        "steps": 20,
+        "cfg": 5.0,
+        "scheduler": "euler",
+        "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+        "denoise": 0.55,
+        "model": "obsession-illustrious-xl-v-pred-v1-1",
+        "pipeline_config": "sdxl-base-1-0-config",
+        "prediction_type": "v_prediction",
+        "zero_terminal_snr": true,
+        "guidance_rescale": 0.7,
+        "dtype": "float32",
+        "seed": 20261201,
+        "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
+      }
     }
   },
   "errors_recovered": 0,
@@ -175,5 +249,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 74.15
+  "elapsed_total_min": 74.19
 }
