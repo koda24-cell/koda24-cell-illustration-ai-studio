@@ -1,0 +1,60 @@
+{
+  "run_id": "gpt-warrior-20261127-01-20261127-100835",
+  "stage": "warrior",
+  "round": 0,
+  "candidate": 0,
+  "op": "txt2img",
+  "params": {
+    "width": 832,
+    "height": 1216,
+    "steps": 20,
+    "cfg": 4.5,
+    "scheduler": "euler",
+    "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+    "denoise": 0.5,
+    "model": "obsession-illustrious-xl-v-pred-v1-1",
+    "pipeline_config": "sdxl-base-1-0-config",
+    "prediction_type": "v_prediction",
+    "zero_terminal_snr": true,
+    "guidance_rescale": 0.7,
+    "dtype": "float32",
+    "seed": 2026112791,
+    "attention_slicing": false,
+    "channels_last": true,
+    "prompt": "very awa, 1girl, adult woman, solo, extreme low angle, midair kick, foot toward viewer, foreshortening, twisting torso, short dark hair, teal braids, red gold martial arts outfit, loose trousers, flowing sash, gold bracelets, white background, floating particles, masterpiece, best quality, newest"
+  },
+  "seconds": 1990.94,
+  "load_seconds": 59.14,
+  "evaluation": {
+    "overall": 1.0,
+    "metrics": {
+      "composition": {
+        "score": 1.0,
+        "rationale": "視覚的重心 (0.54,0.42)。極端な偏りのみ減点",
+        "limitations": "エッジ量の重心と余白の偏り。主題の認識はしていない。",
+        "values": {
+          "cx": 0.5428,
+          "cy": 0.4216
+        }
+      },
+      "artifacts": {
+        "score": 1.0,
+        "rationale": "兆候: 検出なし",
+        "limitations": "空白・極端な白飛び/黒つぶれ（外周につながる単色背景は除外）・高周波ノイズの兆候のみ。手指や人体の破綻は検出できない。",
+        "values": {
+          "issues": [],
+          "hf_energy": 0.0579,
+          "clipped_white": 0.0049,
+          "clipped_black": 0.0001
+        }
+      }
+    },
+    "weights_used": {
+      "composition": 0.5,
+      "artifacts": 1.5
+    },
+    "note": "自動評価は制作途中の改善用の参考値。美術的な完成度の判定や採用判断ではない。"
+  },
+  "created_at": "2026-11-27T10:42:45+00:00",
+  "backend": "diffusers"
+}
