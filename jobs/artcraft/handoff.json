@@ -1,0 +1,14 @@
+{
+  "engine": "photocraft",
+  "public_test_fixture": true,
+  "fixture": "studio-handoff",
+  "operations": [
+    {"name": "doc_open", "arguments": {"path": "before.png"}},
+    {"name": "command_run", "arguments": {"id": "layer.newAdjustmentLayer.hueSaturation", "params": {"saturation": -10}}},
+    {"name": "doc_save", "arguments": {"path": "editable.pcraft"}},
+    {"name": "doc_export", "arguments": {"path": "after.png"}},
+    {"name": "doc_open", "arguments": {"path": "editable.pcraft"}},
+    {"name": "doc_export", "arguments": {"path": "reopened.png"}}
+  ],
+  "expected": ["editable.pcraft", "after.png", "reopened.png"]
+}

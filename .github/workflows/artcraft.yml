@@ -1,13 +1,18 @@
 name: ArtCraft CPU
 on:
   push:
-    branches: [gpt/artcraft-photo-vector-bootstrap, main]
+    branches: [gpt/artcraft-adaptive, main]
     paths:
       - .github/workflows/artcraft.yml
       - studio/artcraft.py
+      - studio/artcraft_handoff.py
+      - studio/artcraft_quality.py
       - config/artcraft.json
       - jobs/artcraft/**
   workflow_dispatch:
+  workflow_run:
+    workflows: [studio-push, produce]
+    types: [completed]
 
 permissions:
   contents: read
@@ -15,13 +20,16 @@ permissions:
 
 jobs:
   edit:
-    if: github.event.repository.private == false
+    if: github.event.repository.private == false && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 22
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
-        engine: [photocraft, vectorcraft]
+        engine: ${{ fromJSON(github.event_name == 'workflow_run' && '["photocraft"]' || '["photocraft","vectorcraft"]') }}
     env:
       ENGINE: ${{ matrix.engine }}
       ARTCRAFT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -44,26 +52,118 @@ jobs:
           docker logout ghcr.io
           docker run --rm -e GITHUB_TOKEN -e GITHUB_REPOSITORY \
             -v "$PWD:/work:ro" "$STUDIO_IMAGE" python -m studio budget-check --minutes 18
-      - name: Scan and unpack pinned official Linux release
+      - name: Prepare input from completed Studio run
+        if: github.event_name == 'workflow_run'
+        env:
+          SOURCE_URL: ${{ github.event.workflow_run.html_url }}
         run: |
-          mkdir -p artcraft-runtime artcraft-inputs artcraft-evidence
-          docker run --rm -v "$PWD:/work:ro" \
-            -v "$PWD/artcraft-runtime:/runtime" -v "$PWD/artcraft-evidence:/evidence" \
+          mkdir -p artcraft-inputs artcraft-evidence
+          printf "%s\n" "$SOURCE_URL" > artcraft-evidence/source-run.txt
+          git clone --branch studio-runs --depth 1 --single-branch "https://github.com/$GITHUB_REPOSITORY" studio-history
+          docker run --rm -v "$PWD:/work:ro" -v "$PWD/artcraft-inputs:/inputs" \
             "$STUDIO_IMAGE" sh -ec 'freshclam --stdout &&
-              python -m studio.artcraft prepare "$1" "/runtime/$1" /evidence/scans.json' sh "$ENGINE"
-      - name: Execute MCP batch offline
+              python -m studio.artcraft_handoff /work/studio-history/runs "$1" /inputs' sh "$SOURCE_URL"
+      - name: Resolve or publish dedicated ArtCraft image
+        id: runtime
+        if: github.event_name != 'workflow_run' || hashFiles('artcraft-inputs/source.json') != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          binary=$(find "artcraft-runtime/$ENGINE" -type f -path "*/bin/$ENGINE-cli" -print)
-          test -x "$binary"
-          mkdir artcraft-results
+          mkdir -p artcraft-inputs artcraft-evidence
+          package=${STUDIO_IMAGE%@*}
+          key=$(sha256sum config/artcraft.json config/runtime.yaml studio/scan.py | sha256sum | cut -c1-20)
+          tag="$package:artcraft-$ENGINE-$key"
+          # Reuse the existing public GHCR package and verify anonymous access before a write.
+          docker manifest inspect "$STUDIO_IMAGE" >/dev/null
+          if ! docker pull "$tag"; then
+            mkdir -p artcraft-build/runtime artcraft-build/evidence
+            docker run --rm -v "$PWD:/work:ro" \
+              -v "$PWD/artcraft-build/runtime:/runtime" -v "$PWD/artcraft-build/evidence:/evidence" \
+              "$STUDIO_IMAGE" sh -ec 'freshclam --stdout &&
+                python -m studio.artcraft prepare "$1" "/runtime/$1" /evidence/scans.json' sh "$ENGINE"
+            cat > artcraft-build/Dockerfile <<'DOCKER'
+          ARG STUDIO_IMAGE
+          FROM ${STUDIO_IMAGE}
+          COPY runtime/ /opt/artcraft/
+          COPY evidence/ /opt/artcraft/evidence/
+          DOCKER
+            docker build --build-arg STUDIO_IMAGE="$STUDIO_IMAGE" -t "$tag" artcraft-build
+            echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+            docker push "$tag"
+            docker logout ghcr.io
+            docker pull "$tag"
+          fi
+          runtime=$(docker image inspect "$tag" --format '{{index .RepoDigests 0}}')
+          [[ "$runtime" == "$package"@sha256:* ]]
+          echo "image=$runtime" >> "$GITHUB_OUTPUT"
+          echo "ARTCRAFT_IMAGE=$runtime" >> "$GITHUB_ENV"
+          echo "ArtCraft runtime: $runtime" >> "$GITHUB_STEP_SUMMARY"
+          docker run --rm --network none "$runtime" cat /opt/artcraft/evidence/scans.json > artcraft-evidence/scans.json
+      - name: Execute MCP batch offline
+        if: steps.runtime.outputs.image != ''
+        env:
+          ARTCRAFT_EVENT: ${{ github.event_name }}
+        run: |
+          mkdir -p artcraft-results
+          job="jobs/artcraft/$ENGINE.json"
+          if [ "$ARTCRAFT_EVENT" = workflow_run ]; then job=jobs/artcraft/handoff.json; fi
+          resume=()
+          for attempt in 0 1 2 3; do
+            status=0
+            docker run --rm --init --network none --read-only --cap-drop ALL \
+              --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+              --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
+              -v "$PWD:/work:ro" -v "$PWD/artcraft-results:/results" \
+              "$ARTCRAFT_IMAGE" sh -ec '
+                binary=$(find "/opt/artcraft/$1" -type f -path "*/bin/$1-cli" -print)
+                test -x "$binary"
+                shift
+                exec python -m studio.artcraft run "$binary" "$@"
+              ' sh "$ENGINE" "$job" artcraft-inputs /results/output "${resume[@]}" || status=$?
+            if [ "$status" = 0 ]; then exit 0; fi
+            if [ "$status" != 75 ]; then exit "$status"; fi
+            resume=(--resume)
+          done
+          exit 75
+      - name: Verify direct stdio connection
+        if: steps.runtime.outputs.image != ''
+        run: |
+          timeout 30 python - <<'PYTHON'
+          import json
+          import os
+          import subprocess
+          command = ["bash", "scripts/artcraft_mcp.sh", os.environ["ENGINE"],
+                     os.environ["ARTCRAFT_IMAGE"], os.path.abspath("artcraft-inputs")]
+          with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True) as process:
+              def send(message):
+                  process.stdin.write(json.dumps({"jsonrpc": "2.0", **message}) + "\n")
+                  process.stdin.flush()
+              send({"id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18",
+                    "capabilities": {}, "clientInfo": {"name": "stdio-test", "version": "1"}}})
+              print(json.loads(process.stdout.readline())["result"]["serverInfo"])
+              send({"method": "notifications/initialized"})
+              send({"id": 2, "method": "tools/list", "params": {}})
+              assert json.loads(process.stdout.readline())["result"]["tools"]
+              process.stdin.close()
+              assert process.wait(timeout=10) == 0
+          PYTHON
+      - name: Verify rejected edit restores the best native document
+        if: steps.runtime.outputs.image != '' && matrix.engine == 'vectorcraft'
+        run: |
+          jq '.quality_goal |= (del(.position) | .protected = [[45,46,52,53]])' \
+            jobs/artcraft/vectorcraft.json > artcraft-evidence/rollback-job.json
           docker run --rm --init --network none --read-only --cap-drop ALL \
             --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
             --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
             -v "$PWD:/work:ro" -v "$PWD/artcraft-results:/results" \
-            "$STUDIO_IMAGE" python -m studio.artcraft run "/work/$binary" \
-            "jobs/artcraft/$ENGINE.json" artcraft-inputs /results/output
+            "$ARTCRAFT_IMAGE" sh -ec '
+              binary=$(find /opt/artcraft/vectorcraft -type f -path "*/bin/vectorcraft-cli" -print)
+              exec python -m studio.artcraft run "$binary" "$@"
+            ' sh artcraft-evidence/rollback-job.json artcraft-inputs /results/rollback
+          jq -e '.history[0].accepted == false and .best_preview == "preview-00.png" and .stop == "stalled"' \
+            artcraft-results/rollback/quality.json
       - name: Show verification
-        if: success()
+        if: steps.runtime.outputs.image != ''
         run: cat artcraft-results/output/verification.json
       - uses: actions/upload-artifact@v4
         if: always()
@@ -95,12 +195,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements/base.txt
-      - name: Append public fixture results
+      - name: Append public ArtCraft results
         run: |
           for engine in photocraft vectorcraft; do
+            source="artcraft-artifacts/artcraft-$engine/artcraft-results/output"
+            [ -f "$source/verification.json" ] || continue
             rid="artcraft-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$engine"
             python -m studio.artcraft review \
-              "artcraft-artifacts/artcraft-$engine/artcraft-results/output" \
+              "$source" \
               "runs-branch/runs/$rid" "$rid"
           done
           STUDIO_RUNS_REPO="$PWD/runs-branch" bash scripts/checkpoint_push.sh "artcraft-$GITHUB_RUN_ID"

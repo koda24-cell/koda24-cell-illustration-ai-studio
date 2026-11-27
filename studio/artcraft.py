@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 
 from PIL import Image, ImageChops
 
+from .artcraft_quality import improve
 from .scan import clamscan, require_clamav, safe_extract
 from .util import ID_RE, now_iso, sha256_file
 
@@ -86,7 +87,7 @@ class Mcp:
                 return tools
 
 
-async def batch(binary, job, inputs, output):
+async def batch(binary, job, inputs, output, resume=False):
     started = time.monotonic()
     cli_version = subprocess.check_output([binary, "--version"], text=True, timeout=15).strip()
     if ENGINES[job["engine"]]["version"] not in cli_version:
@@ -113,7 +114,8 @@ async def batch(binary, job, inputs, output):
             known = {tool["name"] for tool in tools}
             if set(op["name"] for op in job["operations"]) - known:
                 raise ValueError("Job requests a tool absent from tools/list")
-            for op in job["operations"]:
+            async def call(name, arguments):
+                op = {"name": name, "arguments": arguments}
                 entry = {"operation": op}
                 logs.append(entry)
                 try:
@@ -121,6 +123,16 @@ async def batch(binary, job, inputs, output):
                 except Exception as error:
                     entry["error"] = str(error)
                     raise
+                return entry["result"]
+
+            split = job.get("quality_before", len(job["operations"]))
+            if not (resume and (output / "quality.json").exists()):
+                for op in job["operations"][:split]:
+                    await call(**op)
+            if "quality_goal" in job:
+                await improve(call, job["engine"], job["quality_goal"], output, resume=resume)
+            for op in job["operations"][split:]:
+                await call(**op)
         except Exception:
             stderr.flush()
             if (output / "mcp.stderr.log").stat().st_size:
@@ -139,7 +151,7 @@ async def batch(binary, job, inputs, output):
     return {"version": cli_version, "mcp": init, "seconds": round(time.monotonic() - started, 2)}
 
 
-def run(binary, job_path, inputs, output):
+def run(binary, job_path, inputs, output, resume=False):
     job = json.loads(job_path.read_text())
     if job["engine"] not in ENGINES or job["public_test_fixture"] is not True:
         raise ValueError("Use a supported engine and an explicitly public test fixture")
@@ -152,10 +164,17 @@ def run(binary, job_path, inputs, output):
     for name in job["expected"]:
         if Path(name).name != name or name in {"", ".", ".."}:
             raise ValueError("Expected outputs must be plain filenames")
-    output.mkdir(exist_ok=False)
-    if job.get("fixture") == "blue-square":
+    output.mkdir(exist_ok=resume)
+    if job.get("fixture") == "blue-square" and not (output / "before.png").exists():
         Image.new("RGBA", (64, 48), "#204e86").save(output / "before.png")
-    evidence = asyncio.run(batch(binary, job, inputs, output))
+    source = None
+    if job.get("fixture") == "studio-handoff":
+        source = json.loads((inputs / "source.json").read_text())
+        original = inputs / "source.png"
+        if source["scan"] != "SAFETY_CHECK_OK" or source["sha256"] != sha256_file(original):
+            raise ValueError("Studio source failed provenance verification")
+        shutil.copyfile(original, output / "before.png")
+    evidence = asyncio.run(batch(binary, job, inputs, output, resume))
     files = {}
     for name in job["expected"]:
         path = output / name
@@ -170,16 +189,29 @@ def run(binary, job_path, inputs, output):
                     raise ValueError(f"Fully transparent output: {name}")
         if path.suffix == ".svg" and ET.parse(path).getroot().tag != "{http://www.w3.org/2000/svg}svg":
             raise ValueError("Invalid SVG root")
+        if path.suffix in {".psd", ".psb", ".pdf"}:
+            with path.open("rb") as handle:
+                signature = handle.read(6)
+            expected_signature = {".psd": b"8BPS\x00\x01", ".psb": b"8BPS\x00\x02", ".pdf": b"%PDF-"}[path.suffix]
+            if not signature.startswith(expected_signature):
+                raise ValueError(f"Unexpected file format: {name}")
         files[name] = item
     with Image.open(output / "after.png") as after, Image.open(output / "reopened.png") as reopened:
         if after.size != reopened.size or ImageChops.difference(after.convert("RGBA"), reopened.convert("RGBA")).getbbox(alpha_only=False):
             raise ValueError("Native save/reopen changed rendered pixels")
-        if (output / "before.png").exists():
+        if job.get("fixture") == "blue-square" and (output / "before.png").exists():
             with Image.open(output / "before.png") as before:
                 if not ImageChops.difference(before.convert("RGBA"), after.convert("RGBA")).getbbox(alpha_only=False):
                     raise ValueError("PhotoCraft output did not change")
+    quality = json.loads((output / "quality.json").read_text()) if "quality_goal" in job else None
+    if quality:
+        with Image.open(output / quality["best_preview"]) as best, Image.open(output / "after.png") as after:
+            if best.size != after.size or ImageChops.difference(
+                    best.convert("RGBA"), after.convert("RGBA")).getbbox(alpha_only=False):
+                raise ValueError("Final preview does not match the best checkpoint")
     write_json(output / "verification.json", {
-        **evidence, "engine": job["engine"], "outputs": files, "native_roundtrip": True,
+        **evidence, "quality": quality,
+        "engine": job["engine"], "outputs": files, "source": source, "native_roundtrip": True,
         "actions_url": os.environ.get("ARTCRAFT_RUN_URL"), "approval": "pending",
     })
 
@@ -205,6 +237,10 @@ def review(source, destination, run_id):
                 panel.paste(before, (0, 0))
                 panel.paste(after, (before.width, 0))
                 panel.save(destination / comparison)
+    quality = result.get("quality")
+    if quality:
+        for preview in source.glob("preview-*.png"):
+            shutil.copyfile(preview, destination / preview.name)
     operations = json.loads((source / "operations.json").read_text())
     editable = next(name for name in result["outputs"] if name.endswith((".pcraft", ".vectorcraft")))
     shutil.copyfile(source / editable, destination / editable)
@@ -216,8 +252,9 @@ def review(source, destination, run_id):
     })
     write_json(destination / "state.json", {
         "job": {"operations": [entry["operation"] for entry in operations]},
-        "stages": {"edit": {"status": "done", "stop_reason": "native roundtrip",
-                            "best": {"image": "after.png"}, "comparison": comparison}},
+        "stages": {"edit": {"status": "done", "stop_reason": quality["stop"] if quality else "native roundtrip",
+                            "best": {"image": "after.png"}, "comparison": comparison,
+                            "rounds": [{"candidates": [{"image": p.name} for p in sorted(destination.glob("preview-*.png"))]}]}},
     })
     write_json(destination / "after.json", {"evaluation": {"note": "Native PNG roundtrip: pixel-identical"}})
     write_json(destination / "artcraft.json", {**result, "editable": editable})
@@ -235,6 +272,7 @@ def main():
     execution.add_argument("job", type=Path)
     execution.add_argument("inputs", type=Path)
     execution.add_argument("output", type=Path)
+    execution.add_argument("--resume", action="store_true")
     publication = commands.add_parser("review")
     publication.add_argument("source", type=Path)
     publication.add_argument("destination", type=Path)
@@ -245,7 +283,10 @@ def main():
     elif args.action == "review":
         review(args.source, args.destination, args.run_id)
     else:
-        run(args.binary, args.job, args.inputs.resolve(), args.output.resolve())
+        try:
+            run(args.binary, args.job, args.inputs.resolve(), args.output.resolve(), args.resume)
+        except (TimeoutError, BrokenPipeError) as error:
+            parser.exit(75, f"Transient ArtCraft failure: {type(error).__name__}\n")
 
 
 if __name__ == "__main__":

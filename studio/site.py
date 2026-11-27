@@ -152,6 +152,10 @@ function evalTable(e){if(!e)return'';return `<table><tr><th>指標</th><th>ス�
 function artcraftInfo(r){const a=r.artcraft;if(!a?.native_roundtrip)return'';
 return `<p>${esc(a.version)} · ${esc(a.seconds)} 秒 · 保存・再読込で画素一致</p>
 <p><a href="${img(r.run_id,encodeURIComponent(a.editable))}" download>編集データ ${esc(a.editable)}</a></p>
+${a.quality?`<details><summary>目標・差異・修正履歴</summary>
+<p>停止 ${esc(a.quality.stop)} · 最良 ${esc(a.quality.best_preview)}</p>
+<pre>${esc(JSON.stringify(a.quality,null,2))}</pre></details>`:''}
+${a.source?`<p>入力ラン ${esc(a.source.run_id)} / ${esc(a.source.stage)}</p>`:''}
 <details><summary>出力ファイルと検証結果</summary><pre>${esc(JSON.stringify(a.outputs,null,2))}</pre></details>`;}
 const CLIP=[];function copy(t){navigator.clipboard&&navigator.clipboard.writeText(t)}
 function btn(label,t){CLIP.push(t);return `<button onclick="copy(CLIP[${CLIP.length-1}])">${label}</button>`}

@@ -90,3 +90,5 @@
 
 ## ArtCraft（PhotoCraft・VectorCraft）
 - ✅ 公開テストジョブで公式ヘッドレス MCP 編集、ネイティブ形式の再読み込みと PNG・SVG 出力を確認。ジョブ、操作例、検証範囲は [ARTCRAFT.md](ARTCRAFT.md)。
+
+- 🟡 ArtCraftの途中PNGとレイヤー・パス情報による色・位置の反復改善、保護領域を守るロールバック、形式別の再読み込み、公開Studioランの受け渡し。検証結果は [VERIFICATION.md](VERIFICATION.md)。
