@@ -1,0 +1,40 @@
+# 共通 Docker 環境での実制作確認（main からプッシュ起動）
+# 立ち絵 2 枚の連続生成 → 良い方を起点に表情差分（Inpaint, 改善 2 ラウンド）→ 背景透過。モデル読込は1回。
+job_id: docker-production-check
+title: 共通Docker環境の実制作確認（連続生成→表情差分→透過）
+backend: diffusers
+time_budget_minutes: 330
+publish: true
+limits: {max_rounds: 1, candidates_per_round: 2, patience: 2, target_score: 1.5, max_error_retries: 3}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  scheduler: euler
+  width: 832
+  height: 1216
+  steps: 20
+  cfg: 4.5
+  seed: 20261201
+  negative_prompt: "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature"
+evaluation:
+  metrics: [composition, artifacts, consistency, similarity]
+improve: {enabled: true, tune: [cfg, denoise]}
+stages:
+  - name: hero
+    op: txt2img
+    prompt: "masterpiece, best quality, newest, general, 1boy, solo, full body, standing, young adventurer, blue scarf, leather vest, short black hair, determined smile, simple background, white background"
+  - name: expression_surprised
+    op: inpaint
+    init: "stage:hero"
+    consistency_base: "stage:hero"
+    mask: {rect: [0.36, 0.06, 0.28, 0.16], feather: 12}
+    denoise: 0.55
+    limits: {max_rounds: 2, candidates_per_round: 1}
+    prompt: "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
+  - name: cutout
+    op: remove_bg
+    init: "stage:hero"

@@ -105,7 +105,7 @@ def adjust(params: dict[str, Any], evaluation: dict[str, Any], allowed: list[str
 
     if not changes and "cfg" in allowed:
         # 明確な手掛かりが無い場合は cfg を交互に探索（範囲内）
-        c = _step(p, "cfg", +1 if (round_index // 2) % 2 == 0 else -1, rules)
+        c = _step(p, "cfg", +1 if round_index % 2 == 0 else -1, rules)  # 起点は常にベスト設定。上下交互に探索
         if c:
             changes.append(c + "（探索）")
     return p, changes
