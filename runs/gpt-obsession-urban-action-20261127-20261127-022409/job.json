@@ -1,0 +1,50 @@
+{
+  "job_id": "gpt-obsession-urban-action-20261127",
+  "title": "崩壊都市の浮遊少女 — Docker試験生成",
+  "backend": "diffusers",
+  "time_budget_minutes": 100.0,
+  "publish": true,
+  "limits": {
+    "max_rounds": 1,
+    "candidates_per_round": 1,
+    "patience": 1,
+    "target_score": 1.5,
+    "max_error_retries": 1
+  },
+  "defaults": {
+    "width": 832,
+    "height": 1216,
+    "steps": 20,
+    "cfg": 4.5,
+    "scheduler": "euler",
+    "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+    "denoise": 0.5,
+    "model": "obsession-illustrious-xl-v-pred-v1-1",
+    "pipeline_config": "sdxl-base-1-0-config",
+    "prediction_type": "v_prediction",
+    "zero_terminal_snr": true,
+    "guidance_rescale": 0.7,
+    "dtype": "float32",
+    "seed": 20261127,
+    "attention_slicing": false,
+    "channels_last": true
+  },
+  "evaluation": {
+    "metrics": [
+      "composition",
+      "artifacts",
+      "color"
+    ]
+  },
+  "improve": {
+    "enabled": false
+  },
+  "stages": [
+    {
+      "name": "urban-action",
+      "op": "txt2img",
+      "prompt": "very awa, 1girl, solo, full body, short teal hair, white coat, black tactical vest, shorts, floating, reaching towards viewer, from below, foreshortening, ruined city, skyscrapers, floating debris, backlighting, wind, sushispin, aspara, reoen, kamo kamen, cinematic, masterpiece, best quality, newest",
+      "model": "obsession-illustrious-xl-v-pred-v1-1"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+{"t": "2026-11-27T02:24:09+00:00", "event": "session_start", "resumed": false, "remaining_min": 100.0}
+{"t": "2026-11-27T02:24:10+00:00", "event": "candidate_start", "stage": "urban-action", "round": 0, "candidate": 0, "mem_available_mb": 14746, "swap_free_mb": 15359, "vmhwm_mb": 232, "vmrss_mb": 232}
