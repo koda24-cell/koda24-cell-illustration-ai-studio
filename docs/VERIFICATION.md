@@ -105,3 +105,7 @@ C の設定: `attention_slicing: false`（PyTorch SDPA）＋ `channels_last: tru
 - PhotoCraft は 64×48 PNG と .pcraft、VectorCraft は 96×96 PNG・SVG と .vectorcraft を生成。両方で保存後の再読み込みと PNG の画素一致を確認。PhotoCraft のレイヤーマスクが再読み込み後も維持された。
 - 実際の成果物を入力して既存の制作確認サイトをローカルでビルドし、加工前後比較 PNG と編集形式のコピーを確認。本番の掲載は main の Actions で確認する。
 - 既存テスト 49 件と費用ルール検査はローカルで合格。実装と未統合の範囲は [ARTCRAFT.md](ARTCRAFT.md)。
+
+## ArtCraft の途中評価と形式試験
+
+[Actions #46037538290](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46037538290) で PhotoCraft の色差が 118.33 から 6.67 へ3回のMCP修正で減少。VectorCraft は塗りと移動を別の反復で選択し、目標色・目標座標に到達。両案の途中PNGと判定ログを保存。PSD/PSB/PDFを出力し、それぞれを開いてPNG出力を確認。
