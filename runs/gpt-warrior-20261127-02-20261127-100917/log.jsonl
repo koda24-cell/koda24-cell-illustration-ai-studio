@@ -4,3 +4,4 @@
 {"t": "2026-11-27T10:30:10+00:00", "event": "round_done", "stage": "warrior", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 3389, "swap_free_mb": 7755, "vmhwm_mb": 15083, "vmrss_mb": 11480}
 {"t": "2026-11-27T10:30:12+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.77, "stderr": ""}
 {"t": "2026-11-27T10:30:12+00:00", "event": "stage_done", "stage": "warrior", "mem_available_mb": 3400, "swap_free_mb": 7755, "vmhwm_mb": 15083, "vmrss_mb": 11480}
+{"t": "2026-11-27T10:30:13+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.14, "stderr": ""}
