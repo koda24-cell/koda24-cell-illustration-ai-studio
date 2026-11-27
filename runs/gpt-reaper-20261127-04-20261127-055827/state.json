@@ -59,7 +59,7 @@
   "status": "running",
   "stages": {
     "reaper": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -125,25 +125,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/reaper/r00_c0.png",
-      "next_params": {
-        "width": 832,
-        "height": 1216,
-        "steps": 20,
-        "cfg": 4.5,
-        "scheduler": "euler",
-        "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
-        "denoise": 0.5,
-        "model": "obsession-illustrious-xl-v-pred-v1-1",
-        "pipeline_config": "sdxl-base-1-0-config",
-        "prediction_type": "v_prediction",
-        "zero_terminal_snr": true,
-        "guidance_rescale": 0.7,
-        "dtype": "float32",
-        "seed": 2026112754,
-        "attention_slicing": false,
-        "channels_last": true,
-        "prompt": "very awa, 1girl, solo, adult woman, silver hair, blue eyes, dark purple hooded coat, high collar, lavender trim, black gloves, scythe, sitting on stairs, knees up, scythe beside her, looking at viewer, dark stairwell, cyan window light, deep shadows, cinematic, masterpiece, best quality, newest"
-      }
+      "stop_reason": "single_pass"
     }
   },
   "errors_recovered": 0,
@@ -156,5 +138,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 35.72
+  "elapsed_total_min": 35.75
 }
