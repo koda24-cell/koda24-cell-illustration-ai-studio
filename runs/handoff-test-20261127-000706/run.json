@@ -2,15 +2,15 @@
   "run_id": "handoff-test-20261127-000706",
   "job_id": "handoff-test",
   "title": "自動引き継ぎ検証（AI不使用）",
-  "status": "time_budget_exhausted",
+  "status": "completed",
   "backend": "procedural",
   "backend_info": {
     "backend": "procedural",
     "warning": "テスト専用。AIモデルは使用していません"
   },
   "created_at": "2026-11-27T00:07:06+00:00",
-  "finished_at": "2026-11-27T00:10:32+00:00",
-  "elapsed_min": 2.81,
+  "finished_at": "2026-11-27T00:12:34+00:00",
+  "elapsed_min": 4.2,
   "models": [],
   "errors_recovered": 0,
   "fatal_error": null,
@@ -62,11 +62,27 @@
       "private_inputs": []
     },
     "s3": {
-      "status": "pending",
-      "stop_reason": null,
-      "best": null,
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/s3/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 96,
+          "height": 96,
+          "steps": 8,
+          "cfg": 7.0,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.5,
+          "sleep_seconds": 40,
+          "prompt": "test pattern 3",
+          "seed": 572949805
+        }
+      },
       "comparison": null,
-      "private_inputs": null
+      "private_inputs": []
     }
   },
   "publish": false,
@@ -74,12 +90,13 @@
   "approval": "unapproved（approvals/approvals.yaml でユーザーのみ変更）",
   "actions_runs": [
     "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914780671",
-    "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914987949"
+    "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914987949",
+    "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45915196886"
   ],
   "runtime": "docker",
   "timing": {
     "model_load_seconds_total": 0,
-    "generations": 4,
+    "generations": 6,
     "first_generation_seconds": 40.01,
     "later_generation_seconds_avg": 40.0
   },
