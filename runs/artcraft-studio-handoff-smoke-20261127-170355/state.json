@@ -1,0 +1,72 @@
+{
+  "run_id": "artcraft-studio-handoff-smoke-20261127-170355",
+  "job": {
+    "job_id": "artcraft-studio-handoff-smoke",
+    "title": "ArtCraft 公開受け渡し検証",
+    "backend": "procedural",
+    "time_budget_minutes": 5.0,
+    "publish": true,
+    "limits": {
+      "max_rounds": 1,
+      "candidates_per_round": 1,
+      "patience": 2,
+      "target_score": 0.8,
+      "max_error_retries": 3
+    },
+    "defaults": {
+      "width": 128,
+      "height": 128,
+      "steps": 6,
+      "cfg": 7,
+      "scheduler": "euler_a",
+      "negative_prompt": "",
+      "denoise": 0.5
+    },
+    "evaluation": {
+      "metrics": [
+        "composition",
+        "artifacts"
+      ]
+    },
+    "stages": [
+      {
+        "name": "colored",
+        "op": "txt2img",
+        "prompt": "public colored geometric test pattern"
+      }
+    ],
+    "improve": {
+      "enabled": true,
+      "tune": [
+        "cfg",
+        "steps",
+        "denoise",
+        "prompt"
+      ]
+    }
+  },
+  "created_at": "2026-11-27T17:03:55+00:00",
+  "status": "running",
+  "stages": {
+    "colored": {
+      "status": "pending",
+      "rounds": [],
+      "private_inputs": [],
+      "name": "colored",
+      "base_seed": 1469803197,
+      "sec_per_candidate": 0.005805492401123047,
+      "n_done": 1
+    }
+  },
+  "errors_recovered": 0,
+  "elapsed_before_min": 0.0,
+  "sessions": [
+    {
+      "started_at": "2026-11-27T17:03:55+00:00",
+      "resumed": false,
+      "actions_run_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46038703690",
+      "runtime": "docker"
+    }
+  ],
+  "elapsed_total_min": 0.0
+}
