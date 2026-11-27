@@ -5,3 +5,5 @@
 {"t": "2026-11-27T14:52:47+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.94, "stderr": ""}
 {"t": "2026-11-27T14:52:47+00:00", "event": "stage_done", "stage": "mage", "mem_available_mb": 3599, "swap_free_mb": 8263, "vmhwm_mb": 15083, "vmrss_mb": 11352}
 {"t": "2026-11-27T14:52:48+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.38, "stderr": ""}
+{"t": "2026-11-27T14:52:50+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.55, "stderr": ""}
+{"t": "2026-11-27T14:52:50+00:00", "event": "session_end", "status": "completed"}
