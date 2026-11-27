@@ -67,7 +67,12 @@ class DiffusersBackend:
     def describe(self) -> dict[str, Any]:
         import diffusers
         import torch
-        return {"backend": "diffusers", "diffusers": diffusers.__version__, "torch": torch.__version__,
+        cpu = ""
+        try:
+            cpu = next((l.split(":", 1)[1].strip() for l in open("/proc/cpuinfo") if l.startswith("model name")), "")
+        except Exception:  # noqa: BLE001
+            pass
+        return {"backend": "diffusers", "diffusers": diffusers.__version__, "torch": torch.__version__, "cpu_model": cpu,
                 "device": "cpu", "threads": torch.get_num_threads(),
                 "model_load_seconds": round(self.load_seconds, 1)}
 

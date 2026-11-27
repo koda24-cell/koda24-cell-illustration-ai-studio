@@ -80,7 +80,7 @@
 | 同一ジョブ内のモデル再利用（生成・Inpaint・img2img・Outpaint で読込1回） | ✅ |
 | 時間切れ時の自動引き継ぎ（resume 付き produce 起動, 最大 `max_chain` 回） | ✅ |
 | 計時（準備・取得・復元・検査・読込・1枚目・2枚目以降・保存）を記録しサイト表示 | ✅ |
-| 成果物からの studio-runs 復元（`recover-artifact`） | 🟡 |
+| 成果物からの studio-runs 復元（`recover-artifact`） | ✅ |
 | 旧方式（毎回 pip）`produce-native` | ✅（互換用） |
 
 ## 未採用・代替
