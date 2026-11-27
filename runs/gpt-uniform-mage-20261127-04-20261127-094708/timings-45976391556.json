@@ -1,0 +1,154 @@
+{
+ "collected_at": "2026-11-27T10:20:23+00:00",
+ "actions_run": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45976391556",
+ "runtime": "docker",
+ "steps": [
+  {
+   "name": "Set up job",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 1.0
+  },
+  {
+   "name": "Mark start",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 0.0
+  },
+  {
+   "name": "Run actions/checkout@v4",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 1.0
+  },
+  {
+   "name": "Resolve pinned image",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 0.0
+  },
+  {
+   "name": "Pull shared image (GHCR)",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 15.0
+  },
+  {
+   "name": "Budget guard",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 4.0
+  },
+  {
+   "name": "Checkout studio-runs branch (append only)",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 3.0
+  },
+  {
+   "name": "Resolve job, validate against allowlist",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 2.0
+  },
+  {
+   "name": "Prepare host (swap / disk)",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 0.0
+  },
+  {
+   "name": "Restore model cache",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 39.0
+  },
+  {
+   "name": "Mark cache restored",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 2.0
+  },
+  {
+   "name": "Verify cached models (SHA256) / fetch missing (ClamAV gate)",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 10.0
+  },
+  {
+   "name": "Fix ownership of files written in container",
+   "status": "completed",
+   "conclusion": "success",
+   "seconds": 0.0
+  },
+  {
+   "name": "Save model cache (only when newly fetched)",
+   "status": "completed",
+   "conclusion": "skipped",
+   "seconds": 0.0
+  },
+  {
+   "name": "Run production session (in shared image)",
+   "status": "in_progress",
+   "conclusion": null,
+   "seconds": null
+  },
+  {
+   "name": "Final save to studio-runs (with timings)",
+   "status": "pending",
+   "conclusion": null,
+   "seconds": null
+  },
+  {
+   "name": "Summary",
+   "status": "pending",
+   "conclusion": null,
+   "seconds": null
+  },
+  {
+   "name": "Run actions/upload-artifact@v4",
+   "status": "pending",
+   "conclusion": null,
+   "seconds": null
+  },
+  {
+   "name": "Hand off to next job (time budget exhausted → resume)",
+   "status": "pending",
+   "conclusion": null,
+   "seconds": null
+  },
+  {
+   "name": "Fail if run failed",
+   "status": "pending",
+   "conclusion": null,
+   "seconds": null
+  },
+  {
+   "name": "Post Run actions/checkout@v4",
+   "status": "pending",
+   "conclusion": null,
+   "seconds": null
+  }
+ ],
+ "job": {
+  "name": "run (jobs/queue/gpt-uniform-mage-20261127-04.yaml) / studio",
+  "started_at": "2026-11-27T09:45:50Z"
+ },
+ "job_elapsed_seconds_so_far": 2073.9,
+ "marks": [
+  {
+   "mark": "image_pull",
+   "seconds": 15
+  },
+  {
+   "mark": "model_verify_sha256",
+   "seconds": 10
+  }
+ ],
+ "session": {
+  "model_load_seconds_total": 63.9,
+  "generations": 1,
+  "first_generation_seconds": 1913.58,
+  "later_generation_seconds_avg": null
+ }
+}
