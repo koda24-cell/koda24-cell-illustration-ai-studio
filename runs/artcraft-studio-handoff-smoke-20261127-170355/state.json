@@ -50,12 +50,68 @@
   "stages": {
     "colored": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 128,
+            "height": 128,
+            "steps": 6,
+            "cfg": 7,
+            "scheduler": "euler_a",
+            "negative_prompt": "",
+            "denoise": 0.5,
+            "prompt": "public colored geometric test pattern",
+            "seed": 1469803197
+          },
+          "candidates": [
+            {
+              "image": "stages/colored/r00_c0.png",
+              "score": 1.0,
+              "seconds": 0.005805492401123047
+            }
+          ],
+          "best": "stages/colored/r00_c0.png",
+          "best_score": 1.0,
+          "next_changes": [
+            "cfg: 7 → 7.5（探索）"
+          ]
+        }
+      ],
       "private_inputs": [],
       "name": "colored",
       "base_seed": 1469803197,
       "sec_per_candidate": 0.005805492401123047,
-      "n_done": 1
+      "n_done": 1,
+      "best": {
+        "image": "stages/colored/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 128,
+          "height": 128,
+          "steps": 6,
+          "cfg": 7,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.5,
+          "prompt": "public colored geometric test pattern",
+          "seed": 1469803197
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/colored/r00_c0.png",
+      "next_params": {
+        "width": 128,
+        "height": 128,
+        "steps": 6,
+        "cfg": 7.5,
+        "scheduler": "euler_a",
+        "negative_prompt": "",
+        "denoise": 0.5,
+        "prompt": "public colored geometric test pattern",
+        "seed": 1469803197
+      }
     }
   },
   "errors_recovered": 0,
@@ -68,5 +124,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 0.0
+  "elapsed_total_min": 0.02
 }
