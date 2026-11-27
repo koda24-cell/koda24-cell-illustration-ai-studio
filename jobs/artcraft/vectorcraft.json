@@ -1,0 +1,80 @@
+{
+  "engine": "vectorcraft",
+  "public_test_fixture": true,
+  "expected": [
+    "after.svg",
+    "after.png",
+    "reopened.png",
+    "editable.vectorcraft"
+  ],
+  "operations": [
+    {
+      "name": "run_command",
+      "arguments": {
+        "command": "file.new",
+        "params": {
+          "width": 96,
+          "height": 96
+        }
+      }
+    },
+    {
+      "name": "draw_shape",
+      "arguments": {
+        "shape": "rectangle",
+        "x": 8,
+        "y": 8,
+        "width": 80,
+        "height": 80,
+        "radius": 14,
+        "fill": "#204e86"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M 18 56 C 25 19 72 19 79 56 C 65 81 31 81 18 56 Z",
+        "fill": "#f45928",
+        "stroke": "none"
+      }
+    },
+    {
+      "name": "inspect_document",
+      "arguments": {}
+    },
+    {
+      "name": "save_file",
+      "arguments": {
+        "path": "editable.vectorcraft"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "after.svg"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "after.png"
+      }
+    },
+    {
+      "name": "open_file",
+      "arguments": {
+        "path": "editable.vectorcraft"
+      }
+    },
+    {
+      "name": "inspect_document",
+      "arguments": {}
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "reopened.png"
+      }
+    }
+  ]
+}

@@ -98,3 +98,7 @@ C の設定: `attention_slicing: false`（PyTorch SDPA）＋ `channels_last: tru
 - 自動評価は統計的な代理指標。手指・人体の破綻や絵柄の意味的な近さは判定できない。
 - 長いプロンプト（77トークン超）は切り捨てられる（Diffusers 標準の挙動）。
 - Public リポジトリのため `studio-runs` の結果は誰でも閲覧可能。そのため非公開画像から派生する制作は `produce` が実行前に停止する（評価用参考画像は指標のみ保存されるため可）。
+
+## ArtCraft
+- 公式リリースの固定版と SHA256、公式ソースにある CLI・MCP 操作を確認。
+- Actions・画像出力の結果は成功ランと成果物で確認する。実装と未統合の範囲は [ARTCRAFT.md](ARTCRAFT.md)。

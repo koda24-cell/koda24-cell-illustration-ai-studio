@@ -1,0 +1,72 @@
+name: ArtCraft CPU
+on:
+  push:
+    branches: [gpt/artcraft-photo-vector-bootstrap, main]
+    paths:
+      - .github/workflows/artcraft.yml
+      - studio/artcraft.py
+      - config/artcraft.json
+      - jobs/artcraft/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  edit:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [photocraft, vectorcraft]
+    env:
+      ENGINE: ${{ matrix.engine }}
+      ARTCRAFT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Resolve pinned Studio Docker image
+        run: |
+          image=$(awk '/^image:/{print $2}' config/runtime.yaml)
+          digest=$(awk '/^digest:/{print $2}' config/runtime.yaml)
+          [[ "$digest" =~ ^sha256:[a-f0-9]{64}$ ]]
+          echo "STUDIO_IMAGE=$image@$digest" >> "$GITHUB_ENV"
+      - name: Pull image and check budget
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker pull "$STUDIO_IMAGE"
+          docker logout ghcr.io
+          docker run --rm -e GITHUB_TOKEN -e GITHUB_REPOSITORY \
+            -v "$PWD:/work:ro" "$STUDIO_IMAGE" python -m studio budget-check --minutes 18
+      - name: Scan and unpack pinned official Linux release
+        run: |
+          mkdir -p artcraft-runtime artcraft-inputs artcraft-evidence
+          docker run --rm -v "$PWD:/work:ro" \
+            -v "$PWD/artcraft-runtime:/runtime" -v "$PWD/artcraft-evidence:/evidence" \
+            "$STUDIO_IMAGE" sh -ec 'freshclam --stdout &&
+              python -m studio.artcraft prepare "$1" "/runtime/$1" /evidence/scans.json' sh "$ENGINE"
+      - name: Execute MCP batch offline
+        run: |
+          binary=$(find "artcraft-runtime/$ENGINE" -type f -name "$ENGINE-cli" -print)
+          test -x "$binary"
+          mkdir artcraft-results
+          docker run --rm --init --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+            --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
+            -v "$PWD:/work:ro" -v "$PWD/artcraft-results:/results" \
+            "$STUDIO_IMAGE" python -m studio.artcraft run "/work/$binary" \
+            "jobs/artcraft/$ENGINE.json" artcraft-inputs /results/output
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: artcraft-${{ matrix.engine }}
+          path: |
+            artcraft-results/
+            artcraft-evidence/
+          retention-days: 2

@@ -87,3 +87,6 @@
 - **Stable Diffusion WebUI（A1111/Forge）**: 起動時に既定モデルを自動ダウンロードする挙動があり許可リスト制と衝突、かつ GUI 前提で Actions 向きでないため、**同等機能を Diffusers の CLI 実装で代替**。
 - **Stability Matrix**: GUI のモデル管理ツール。**許可リスト＋台帳＋取得/検査/キャッシュ（`studio` CLI）で代替**。
 - **Flux / SD3 系**: CPU で 1 枚に数十分〜以上かかり実用外のため未対応。
+
+## ArtCraft（PhotoCraft・VectorCraft）
+- 🟡 公式ヘッドレス MCP の公開テストジョブを実装。ジョブ、操作例、検証範囲は [ARTCRAFT.md](ARTCRAFT.md)。
