@@ -1,0 +1,55 @@
+{
+  "job_id": "gpt-uniform-mage-20261127-04",
+  "title": "制服魔術師 04 背面広角・巨大な空間に対峙",
+  "backend": "diffusers",
+  "time_budget_minutes": 100.0,
+  "publish": true,
+  "assign_to": {
+    "project": "kotama-no-bouken",
+    "targets": [
+      "mage_uniform_illustration_candidate"
+    ]
+  },
+  "limits": {
+    "max_rounds": 1,
+    "candidates_per_round": 1,
+    "patience": 1,
+    "target_score": 1.5,
+    "max_error_retries": 1
+  },
+  "defaults": {
+    "width": 1216,
+    "height": 832,
+    "steps": 20,
+    "cfg": 4.5,
+    "scheduler": "euler",
+    "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+    "denoise": 0.5,
+    "model": "obsession-illustrious-xl-v-pred-v1-1",
+    "pipeline_config": "sdxl-base-1-0-config",
+    "prediction_type": "v_prediction",
+    "zero_terminal_snr": true,
+    "guidance_rescale": 0.7,
+    "dtype": "float32",
+    "seed": 2026112784,
+    "attention_slicing": false,
+    "channels_last": true
+  },
+  "evaluation": {
+    "metrics": [
+      "composition",
+      "artifacts"
+    ]
+  },
+  "improve": {
+    "enabled": false
+  },
+  "stages": [
+    {
+      "name": "mage",
+      "op": "txt2img",
+      "prompt": "very awa, 1girl, solo, from behind, wide shot, full body, standing, staff held outward, tiny figure, enormous gothic archway, deep perspective, mist, shafts of light, adult woman, dark blue bob hair, amber eyes, navy blazer, white shirt, red ribbon, pleated skirt, dark tights, magic staff, anime coloring, masterpiece, best quality, newest",
+      "model": "obsession-illustrious-xl-v-pred-v1-1"
+    }
+  ]
+}
