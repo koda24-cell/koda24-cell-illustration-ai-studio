@@ -1,0 +1,15 @@
+{
+  "run_id": "artcraft-46035810592-1-vectorcraft",
+  "job_id": "vectorcraft",
+  "title": "ArtCraft · vectorcraft-cli 0.24.1",
+  "status": "done",
+  "backend": "vectorcraft",
+  "runtime": "Docker / MCP",
+  "publish": true,
+  "created_at": "2026-11-27T16:44:05+00:00",
+  "finished_at": "2026-11-27T16:44:05+00:00",
+  "elapsed_min": 0.0,
+  "actions_runs": [
+    "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46035810592"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "version": "vectorcraft-cli 0.24.1",
+  "mcp": {
+    "capabilities": {
+      "completions": {},
+      "logging": {},
+      "prompts": {
+        "listChanged": false
+      },
+      "resources": {},
+      "tools": {}
+    },
+    "instructions": "VectorCraft is a professional vector illustration app. Coordinates are points in document space (y down, origin at the first artboard's top-left; a new document is 612×792). Draw with draw_shape / draw_path, change colours with set_paint, look with render_preview and doc_inspect. Every menu action is a command: find it with command_list and run it with command_run (or command_batch for several). New objects become the selection, and most commands act on the selection (or on explicit `ids`). prompts/list has ready-made workflows, completion/complete finishes a command id, a format, an effect or a swatch name, and vectorcraft://object/{id}, vectorcraft://command/{id}, vectorcraft://effect/{id} and vectorcraft://swatch/{name} read one thing at a time instead of the whole document. Backend: headless.",
+    "protocolVersion": "2025-06-18",
+    "serverInfo": {
+      "name": "vectorcraft",
+      "title": "VectorCraft",
+      "version": "0.24.1"
+    }
+  },
+  "seconds": 0.02,
+  "engine": "vectorcraft",
+  "outputs": {
+    "after.svg": {
+      "sha256": "ded04e5005fef511ed3e3da140d27af54c3a60824353f37b2f4a6fd2acd8c35f",
+      "bytes": 848
+    },
+    "after.png": {
+      "sha256": "a40f9269940f8bea279dedc43987a0abf2f1256600bfa045eefc3863d1ac9f94",
+      "bytes": 2430,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    },
+    "reopened.png": {
+      "sha256": "a40f9269940f8bea279dedc43987a0abf2f1256600bfa045eefc3863d1ac9f94",
+      "bytes": 2430,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    },
+    "editable.vectorcraft": {
+      "sha256": "d0d0f9eaf3d16be3fe23f0599dec6b34b3620de26456944496d0d712e99164b0",
+      "bytes": 33323
+    }
+  },
+  "native_roundtrip": true,
+  "actions_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46035810592",
+  "approval": "pending",
+  "editable": "editable.vectorcraft"
+}

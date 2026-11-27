@@ -1,0 +1,108 @@
+{
+  "job": {
+    "operations": [
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "before.png"
+        }
+      },
+      {
+        "name": "command_run",
+        "arguments": {
+          "id": "layer.new.layer",
+          "params": {
+            "name": "Color accent"
+          }
+        }
+      },
+      {
+        "name": "command_run",
+        "arguments": {
+          "id": "select.all",
+          "params": {}
+        }
+      },
+      {
+        "name": "command_run",
+        "arguments": {
+          "id": "edit.fill",
+          "params": {
+            "color": "#f45928"
+          }
+        }
+      },
+      {
+        "name": "command_run",
+        "arguments": {
+          "id": "select.rect",
+          "params": {
+            "x": 16,
+            "y": 12,
+            "width": 32,
+            "height": 24,
+            "ellipse": true
+          }
+        }
+      },
+      {
+        "name": "command_run",
+        "arguments": {
+          "id": "layer.layerMask.revealSelection",
+          "params": {}
+        }
+      },
+      {
+        "name": "command_run",
+        "arguments": {
+          "id": "layer.newAdjustmentLayer.hueSaturation",
+          "params": {
+            "saturation": -20
+          }
+        }
+      },
+      {
+        "name": "doc_inspect",
+        "arguments": {}
+      },
+      {
+        "name": "doc_save",
+        "arguments": {
+          "path": "editable.pcraft"
+        }
+      },
+      {
+        "name": "doc_export",
+        "arguments": {
+          "path": "after.png"
+        }
+      },
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "editable.pcraft"
+        }
+      },
+      {
+        "name": "doc_inspect",
+        "arguments": {}
+      },
+      {
+        "name": "doc_export",
+        "arguments": {
+          "path": "reopened.png"
+        }
+      }
+    ]
+  },
+  "stages": {
+    "edit": {
+      "status": "done",
+      "stop_reason": "native roundtrip",
+      "best": {
+        "image": "after.png"
+      },
+      "comparison": "comparison.png"
+    }
+  }
+}
