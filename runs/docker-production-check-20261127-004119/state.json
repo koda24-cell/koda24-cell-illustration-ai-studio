@@ -189,6 +189,46 @@
           "next_changes": [
             "cfg: 4.5 → 5（探索）"
           ]
+        },
+        {
+          "round": 1,
+          "params": {
+            "width": 832,
+            "height": 1216,
+            "steps": 20,
+            "cfg": 5.0,
+            "scheduler": "euler",
+            "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+            "denoise": 0.55,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 20261201,
+            "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
+          },
+          "candidates": [
+            {
+              "image": "stages/expression_surprised/r01_c0.png",
+              "score": 0.9814,
+              "seconds": 1029.483963251114
+            }
+          ],
+          "best": "stages/expression_surprised/r01_c0.png",
+          "best_score": 0.9814,
+          "vs_first": {
+            "overall_delta": 0.0,
+            "metric_delta": {
+              "composition": 0.0,
+              "artifacts": 0.0,
+              "consistency": 0.0
+            }
+          },
+          "next_changes": [
+            "cfg: 4.5 → 5（探索）"
+          ]
         }
       ],
       "private_inputs": [],
@@ -218,7 +258,7 @@
           "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
         }
       },
-      "no_improve": 0,
+      "no_improve": 1,
       "first_best": "stages/expression_surprised/r00_c0.png",
       "next_params": {
         "width": 832,
@@ -236,7 +276,8 @@
         "dtype": "float32",
         "seed": 20261201,
         "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
-      }
+      },
+      "comparison": "comparisons/expression_surprised_latest.png"
     }
   },
   "errors_recovered": 0,
@@ -249,5 +290,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 91.38
+  "elapsed_total_min": 91.42
 }
