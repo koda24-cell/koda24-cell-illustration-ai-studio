@@ -179,6 +179,7 @@
       "width": 3,
       "color": "#102030"
     },
-    "intent": "Use the swatch as the accent fill, move the accent, and add the specified outline width."
+    "intent": "Use the swatch as the accent fill, move the accent, and add the specified outline width.",
+    "vision_review": true
   }
 }
