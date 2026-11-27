@@ -84,7 +84,7 @@
   "status": "running",
   "stages": {
     "hero": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -153,23 +153,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/hero/r00_c0.png",
-      "next_params": {
-        "width": 832,
-        "height": 1216,
-        "steps": 20,
-        "cfg": 5.0,
-        "scheduler": "euler",
-        "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
-        "denoise": 0.5,
-        "model": "obsession-illustrious-xl-v-pred-v1-1",
-        "pipeline_config": "sdxl-base-1-0-config",
-        "prediction_type": "v_prediction",
-        "zero_terminal_snr": true,
-        "guidance_rescale": 0.7,
-        "dtype": "float32",
-        "seed": 20261201,
-        "prompt": "masterpiece, best quality, newest, general, 1boy, solo, full body, standing, young adventurer, blue scarf, leather vest, short black hair, determined smile, simple background, white background"
-      }
+      "stop_reason": "max_rounds"
     }
   },
   "errors_recovered": 0,
@@ -182,5 +166,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 56.98
+  "elapsed_total_min": 57.01
 }
