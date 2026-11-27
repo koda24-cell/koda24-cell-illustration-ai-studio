@@ -1,0 +1,34 @@
+# Uniform mage candidate; original in-game mage assigned to assets/characters/イラスト131.webp.
+# Original portrait could not be decoded via connector; this is a new provisional costume/design.
+# Strongly differentiated camera angles and poses; shared character traits and outfit.
+# Text-only; no unapproved model or image dependency.
+job_id: gpt-uniform-mage-20261127-02
+title: "制服魔術師 02 真上から俯瞰・魔法陣の中心"
+backend: diffusers
+time_budget_minutes: 100
+publish: true
+assign_to: {project: kotama-no-bouken, targets: ["mage_uniform_illustration_candidate"]}
+limits: {max_rounds: 1, candidates_per_round: 1, patience: 1, target_score: 1.5, max_error_retries: 1}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  scheduler: euler
+  width: 1024
+  height: 1024
+  steps: 20
+  cfg: 4.5
+  seed: 2026112782
+  attention_slicing: false
+  channels_last: true
+  negative_prompt: "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished"
+evaluation:
+  metrics: [composition, artifacts]
+improve: {enabled: false}
+stages:
+  - name: mage
+    op: txt2img
+    prompt: "very awa, 1girl, solo, directly overhead, top-down view, full body, kneeling, staff held across lap, circular magic array, geometric stone floor, glowing cyan light, adult woman, dark blue bob hair, amber eyes, navy blazer, white shirt, red ribbon, pleated skirt, dark tights, magic staff, anime coloring, masterpiece, best quality, newest"
