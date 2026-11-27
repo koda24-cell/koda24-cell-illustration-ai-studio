@@ -89,8 +89,8 @@
       "private_inputs": [],
       "name": "hero",
       "base_seed": 20261201,
-      "sec_per_candidate": 1694.0695216655731,
-      "n_done": 1
+      "sec_per_candidate": 1690.9633578062057,
+      "n_done": 2
     }
   },
   "errors_recovered": 0,
@@ -103,5 +103,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 28.78
+  "elapsed_total_min": 56.95
 }
