@@ -98,3 +98,10 @@ C の設定: `attention_slicing: false`（PyTorch SDPA）＋ `channels_last: tru
 - 自動評価は統計的な代理指標。手指・人体の破綻や絵柄の意味的な近さは判定できない。
 - 長いプロンプト（77トークン超）は切り捨てられる（Diffusers 標準の挙動）。
 - Public リポジトリのため `studio-runs` の結果は誰でも閲覧可能。そのため非公開画像から派生する制作は `produce` が実行前に停止する（評価用参考画像は指標のみ保存されるため可）。
+
+## ArtCraft
+- 公式リリースの固定版と SHA256、公式ソースにある CLI・MCP 操作を確認。
+- [ArtCraft CPU #46035241208](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46035241208) で両エンジンの並列実行、CLI バージョン照合、MCP スキーマ取得と編集、配布アーカイブおよび展開済みファイルの ClamAV 検査を確認。
+- PhotoCraft は 64×48 PNG と .pcraft、VectorCraft は 96×96 PNG・SVG と .vectorcraft を生成。両方で保存後の再読み込みと PNG の画素一致を確認。PhotoCraft のレイヤーマスクが再読み込み後も維持された。
+- 実際の成果物を入力して既存の制作確認サイトをローカルでビルドし、加工前後比較 PNG と編集形式のコピーを確認。本番の掲載は main の Actions で確認する。
+- 既存テスト 49 件と費用ルール検査はローカルで合格。実装と未統合の範囲は [ARTCRAFT.md](ARTCRAFT.md)。
