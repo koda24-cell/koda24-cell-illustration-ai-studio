@@ -53,7 +53,7 @@ jobs:
               python -m studio.artcraft prepare "$1" "/runtime/$1" /evidence/scans.json' sh "$ENGINE"
       - name: Execute MCP batch offline
         run: |
-          binary=$(find "artcraft-runtime/$ENGINE" -type f -name "$ENGINE-cli" -print)
+          binary=$(find "artcraft-runtime/$ENGINE" -type f -path "*/bin/$ENGINE-cli" -print)
           test -x "$binary"
           mkdir artcraft-results
           docker run --rm --init --network none --read-only --cap-drop ALL \

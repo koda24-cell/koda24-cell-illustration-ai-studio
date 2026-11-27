@@ -31,6 +31,24 @@
       }
     },
     {
+      "name": "run_command",
+      "arguments": {
+        "command": "paint.setFill",
+        "params": {
+          "gradient": {
+            "start": [
+              8,
+              8
+            ],
+            "end": [
+              88,
+              88
+            ]
+          }
+        }
+      }
+    },
+    {
       "name": "draw_path",
       "arguments": {
         "d": "M 18 56 C 25 19 72 19 79 56 C 65 81 31 81 18 56 Z",
