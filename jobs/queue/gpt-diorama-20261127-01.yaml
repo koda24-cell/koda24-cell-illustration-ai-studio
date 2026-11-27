@@ -1,0 +1,33 @@
+# Text-only generation. User reference pose and red/gold cloth analyzed, no image uploaded.
+# warrior is the current game class called Monk; costume is a provisional design.
+# Dioramas are independent environment illustration candidates.
+job_id: gpt-diorama-20261127-01
+title: "箱庭・冒険者の拠点町"
+backend: diffusers
+time_budget_minutes: 100
+publish: true
+assign_to: {project: kotama-no-bouken, targets: ["diorama_illustration_candidate"]}
+limits: {max_rounds: 1, candidates_per_round: 1, patience: 1, target_score: 1.5, max_error_retries: 1}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  scheduler: euler
+  width: 1216
+  height: 832
+  steps: 20
+  cfg: 4.5
+  seed: 2026112793
+  attention_slicing: false
+  channels_last: true
+  negative_prompt: "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished"
+evaluation:
+  metrics: [composition, artifacts]
+improve: {enabled: false}
+stages:
+  - name: diorama
+    op: txt2img
+    prompt: "very awa, isometric miniature diorama, mobile game environment, fantasy town, cutaway terrain, adventurer guild, small shops, fountain plaza, timber houses, stone paths, tiny adventurers, lush trees, colorful banners, soft sunlight, detailed anime background, masterpiece, best quality, newest"
