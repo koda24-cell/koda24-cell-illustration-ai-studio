@@ -1,0 +1,15 @@
+# 自動引き継ぎの検証（procedural＝AI不使用のテスト用バックエンド、1候補40秒の模擬）
+# 1ジョブ1.5分の時間予算で時間切れ → produce を resume_run_id 付きで自動起動 → 続きから完了するかを確認
+job_id: handoff-test
+title: 自動引き継ぎ検証（AI不使用）
+backend: procedural
+time_budget_minutes: 1.5
+publish: false
+limits: {max_rounds: 1, candidates_per_round: 2, patience: 1, target_score: 1.5}
+defaults: {width: 96, height: 96, steps: 8, sleep_seconds: 40}
+evaluation: {metrics: [artifacts]}
+improve: {enabled: false, tune: []}
+stages:
+  - {name: s1, op: txt2img, prompt: "test pattern 1"}
+  - {name: s2, op: txt2img, prompt: "test pattern 2"}
+  - {name: s3, op: txt2img, prompt: "test pattern 3"}

@@ -218,13 +218,14 @@ jobs:
           RID: ${{ steps.run.outputs.run_id }}
           DEPTH: ${{ inputs.chain_depth }}
           MAXC: ${{ steps.img.outputs.max_chain }}
+          TB: ${{ inputs.time_budget }}
         run: |
           next=$(( ${DEPTH:-0} + 1 ))
           if [ "$next" -gt "${MAXC:-3}" ]; then
             echo "::warning::自動引き継ぎ上限（$MAXC 回）に達したため停止。続けるには produce を resume_run_id=$RID で手動起動"; exit 0
           fi
           gh workflow run produce.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" \
-            -f resume_run_id="$RID" -f time_budget=330 -f chain_depth="$next"
+            -f resume_run_id="$RID" -f time_budget="${TB:-}" -f chain_depth="$next"
           echo "引き継ぎジョブを起動しました（$next/$MAXC）: resume_run_id=$RID" >> "$GITHUB_STEP_SUMMARY"
       - name: Fail if run failed
         if: steps.run.outputs.exit != '0'
