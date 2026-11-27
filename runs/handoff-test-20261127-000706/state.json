@@ -175,12 +175,74 @@
     },
     "s3": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 96,
+            "height": 96,
+            "steps": 8,
+            "cfg": 7.0,
+            "scheduler": "euler_a",
+            "negative_prompt": "",
+            "denoise": 0.5,
+            "sleep_seconds": 40,
+            "prompt": "test pattern 3",
+            "seed": 572949805
+          },
+          "candidates": [
+            {
+              "image": "stages/s3/r00_c0.png",
+              "score": 1.0,
+              "seconds": 40.008195638656616
+            },
+            {
+              "image": "stages/s3/r00_c1.png",
+              "score": 1.0,
+              "seconds": 40.00115370750427
+            }
+          ],
+          "best": "stages/s3/r00_c0.png",
+          "best_score": 1.0,
+          "next_changes": []
+        }
+      ],
       "private_inputs": [],
       "name": "s3",
       "base_seed": 572949805,
-      "sec_per_candidate": 40.008195638656616,
-      "n_done": 1
+      "sec_per_candidate": 40.004674673080444,
+      "n_done": 2,
+      "best": {
+        "image": "stages/s3/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 96,
+          "height": 96,
+          "steps": 8,
+          "cfg": 7.0,
+          "scheduler": "euler_a",
+          "negative_prompt": "",
+          "denoise": 0.5,
+          "sleep_seconds": 40,
+          "prompt": "test pattern 3",
+          "seed": 572949805
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/s3/r00_c0.png",
+      "next_params": {
+        "width": 96,
+        "height": 96,
+        "steps": 8,
+        "cfg": 7.0,
+        "scheduler": "euler_a",
+        "negative_prompt": "",
+        "denoise": 0.5,
+        "sleep_seconds": 40,
+        "prompt": "test pattern 3",
+        "seed": 572949805
+      }
     }
   },
   "errors_recovered": 0,
@@ -207,6 +269,6 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 3.46,
+  "elapsed_total_min": 4.15,
   "finished_at": "2026-11-27T00:10:32+00:00"
 }
