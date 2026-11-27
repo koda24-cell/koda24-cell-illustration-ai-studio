@@ -5,6 +5,9 @@ set -u
 repo="${STUDIO_RUNS_REPO:?}"
 run_dir="${1:-}"
 cd "$repo" || exit 1
+# コンテナ内でも rebase/commit できるよう識別情報を環境変数で与える
+export GIT_AUTHOR_NAME="studio-bot" GIT_COMMITTER_NAME="studio-bot"
+export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
 git add -A
 if git diff --cached --quiet; then exit 0; fi
 git -c user.name="studio-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
