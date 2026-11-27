@@ -1,0 +1,120 @@
+{
+  "job": {
+    "operations": [
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "checkpoint-03.pcraft"
+        }
+      },
+      {
+        "name": "doc_inspect",
+        "arguments": {}
+      },
+      {
+        "name": "doc_save",
+        "arguments": {
+          "path": "editable.pcraft"
+        }
+      },
+      {
+        "name": "doc_export",
+        "arguments": {
+          "path": "after.png"
+        }
+      },
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "editable.pcraft"
+        }
+      },
+      {
+        "name": "doc_inspect",
+        "arguments": {}
+      },
+      {
+        "name": "doc_export",
+        "arguments": {
+          "path": "reopened.png"
+        }
+      },
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "editable.pcraft"
+        }
+      },
+      {
+        "name": "doc_save",
+        "arguments": {
+          "path": "format.psd"
+        }
+      },
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "format.psd"
+        }
+      },
+      {
+        "name": "doc_export",
+        "arguments": {
+          "path": "format-psd.png"
+        }
+      },
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "editable.pcraft"
+        }
+      },
+      {
+        "name": "doc_save",
+        "arguments": {
+          "path": "format.psb"
+        }
+      },
+      {
+        "name": "doc_open",
+        "arguments": {
+          "path": "format.psb"
+        }
+      },
+      {
+        "name": "doc_export",
+        "arguments": {
+          "path": "format-psb.png"
+        }
+      }
+    ]
+  },
+  "stages": {
+    "edit": {
+      "status": "done",
+      "stop_reason": "iteration_limit",
+      "best": {
+        "image": "after.png"
+      },
+      "comparison": "comparison.png",
+      "rounds": [
+        {
+          "candidates": [
+            {
+              "image": "preview-00.png"
+            },
+            {
+              "image": "preview-01.png"
+            },
+            {
+              "image": "preview-02.png"
+            },
+            {
+              "image": "preview-03.png"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
