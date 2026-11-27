@@ -60,12 +60,90 @@
   "stages": {
     "diorama": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 1216,
+            "height": 832,
+            "steps": 20,
+            "cfg": 4.5,
+            "scheduler": "euler",
+            "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+            "denoise": 0.5,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 2026112794,
+            "attention_slicing": false,
+            "channels_last": true,
+            "prompt": "very awa, isometric miniature diorama, mobile game environment, forest dungeon entrance, layered terrain, ancient stone ruins, mossy archway, wooden bridge, winding stream, lush trees, tiny adventurers, glowing crystals, dappled sunlight, detailed anime background, masterpiece, best quality, newest"
+          },
+          "candidates": [
+            {
+              "image": "stages/diorama/r00_c0.png",
+              "score": 1.0,
+              "seconds": 1994.6145260334015
+            }
+          ],
+          "best": "stages/diorama/r00_c0.png",
+          "best_score": 1.0,
+          "next_changes": []
+        }
+      ],
       "private_inputs": [],
       "name": "diorama",
       "base_seed": 2026112794,
       "sec_per_candidate": 1994.6145260334015,
-      "n_done": 1
+      "n_done": 1,
+      "best": {
+        "image": "stages/diorama/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 1216,
+          "height": 832,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+          "denoise": 0.5,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 2026112794,
+          "attention_slicing": false,
+          "channels_last": true,
+          "prompt": "very awa, isometric miniature diorama, mobile game environment, forest dungeon entrance, layered terrain, ancient stone ruins, mossy archway, wooden bridge, winding stream, lush trees, tiny adventurers, glowing crystals, dappled sunlight, detailed anime background, masterpiece, best quality, newest"
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/diorama/r00_c0.png",
+      "next_params": {
+        "width": 1216,
+        "height": 832,
+        "steps": 20,
+        "cfg": 4.5,
+        "scheduler": "euler",
+        "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+        "denoise": 0.5,
+        "model": "obsession-illustrious-xl-v-pred-v1-1",
+        "pipeline_config": "sdxl-base-1-0-config",
+        "prediction_type": "v_prediction",
+        "zero_terminal_snr": true,
+        "guidance_rescale": 0.7,
+        "dtype": "float32",
+        "seed": 2026112794,
+        "attention_slicing": false,
+        "channels_last": true,
+        "prompt": "very awa, isometric miniature diorama, mobile game environment, forest dungeon entrance, layered terrain, ancient stone ruins, mossy archway, wooden bridge, winding stream, lush trees, tiny adventurers, glowing crystals, dappled sunlight, detailed anime background, masterpiece, best quality, newest"
+      }
     }
   },
   "errors_recovered": 0,
@@ -78,5 +156,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 34.18
+  "elapsed_total_min": 34.35
 }
