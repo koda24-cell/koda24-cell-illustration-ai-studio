@@ -1,0 +1,10 @@
+job_id: artcraft-studio-handoff-smoke
+title: ArtCraft 公開受け渡し検証
+backend: procedural
+time_budget_minutes: 5
+publish: true
+limits: {max_rounds: 1, candidates_per_round: 1}
+defaults: {width: 128, height: 128, steps: 6, cfg: 7}
+evaluation: {metrics: [composition, artifacts]}
+stages:
+  - {name: colored, op: txt2img, prompt: "public colored geometric test pattern"}
