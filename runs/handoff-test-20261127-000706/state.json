@@ -51,7 +51,7 @@
     ]
   },
   "created_at": "2026-11-27T00:07:06+00:00",
-  "status": "time_budget_exhausted",
+  "status": "running",
   "stages": {
     "s1": {
       "status": "done",
@@ -115,11 +115,16 @@
     },
     "s2": {
       "status": "pending",
-      "rounds": []
+      "rounds": [],
+      "private_inputs": [],
+      "name": "s2",
+      "base_seed": 1012771870,
+      "sec_per_candidate": 40.00675106048584,
+      "n_done": 1
     }
   },
   "errors_recovered": 0,
-  "elapsed_before_min": 0.0,
+  "elapsed_before_min": 1.39,
   "sessions": [
     {
       "started_at": "2026-11-27T00:07:06+00:00",
@@ -127,8 +132,14 @@
       "actions_run_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914780671",
       "runtime": "docker",
       "ended_at": "2026-11-27T00:08:29+00:00"
+    },
+    {
+      "started_at": "2026-11-27T00:09:08+00:00",
+      "resumed": true,
+      "actions_run_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914987949",
+      "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 1.39,
+  "elapsed_total_min": 2.06,
   "finished_at": "2026-11-27T00:08:29+00:00"
 }
