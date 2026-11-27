@@ -27,6 +27,9 @@ def restore(archive, job, target):
             raise ValueError("Checkpoint goal or iteration count is invalid")
         names = {state["best_native"], state["best_preview"], "preview-00.png"}
         names.update(item["preview"] for item in state["history"])
+        extension = Path(state["best_native"]).suffix
+        names.update(f"checkpoint-{index:02}{extension}"
+                     for index, item in enumerate(state["history"], 1) if item["accepted"])
         if any(not re.fullmatch(r"(?:preview-0[0-3]\.png|checkpoint-0[0-3]\.(?:pcraft|vectorcraft))", name)
                for name in names):
             raise ValueError("Invalid checkpoint path")

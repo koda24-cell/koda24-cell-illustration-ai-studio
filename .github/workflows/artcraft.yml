@@ -271,6 +271,12 @@ jobs:
             -v "$PWD/resumed:/results" "$runtime" sh -ec 'freshclam --stdout &&
               python -m studio.artcraft_resume /checkpoint.zip jobs/artcraft/photocraft.json /results/output'
           sudo chown -R "$(id -u):$(id -g)" resumed
+          # Exercise continuation from the first accepted iteration of the real run.
+          first=$(jq -ce '.history[0] | select(.accepted == true and .preview == "preview-01.png")' resumed/output/quality.json)
+          test -n "$first"
+          jq '.history |= .[:1] | .best_preview="preview-01.png" | .best_native="checkpoint-01.pcraft" | del(.stop)' \
+            resumed/output/quality.json > resumed/partial.json
+          mv resumed/partial.json resumed/output/quality.json
           docker run --rm --init --network none --read-only --cap-drop ALL \
             --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
             --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
@@ -278,4 +284,5 @@ jobs:
               binary=$(find /opt/artcraft/photocraft -type f -path "*/bin/photocraft-cli" -print)
               exec python -m studio.artcraft run "$binary" jobs/artcraft/photocraft.json artcraft-resume-inputs /results/output --resume'
           jq -e '.quality.history | length == 3' resumed/output/verification.json
-          jq -e '. | any(.operation.name == "doc_open" and (.operation.arguments.path | startswith("checkpoint-")))' resumed/output/operations.json
+          jq -e '.[0].operation.arguments.path == "checkpoint-01.pcraft" and
+                 ([.[] | select(.operation.name == "command_run")] | length) == 2' resumed/output/operations.json
