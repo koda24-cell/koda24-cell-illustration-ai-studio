@@ -13,3 +13,5 @@
 {"t": "2026-11-27T00:09:50+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.13, "stderr": ""}
 {"t": "2026-11-27T00:09:50+00:00", "event": "candidate_start", "stage": "s2", "round": 0, "candidate": 1, "mem_available_mb": 14906, "swap_free_mb": 3071, "vmhwm_mb": 77, "vmrss_mb": 75}
 {"t": "2026-11-27T00:10:30+00:00", "event": "round_done", "stage": "s2", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 14908, "swap_free_mb": 3071, "vmhwm_mb": 77, "vmrss_mb": 76}
+{"t": "2026-11-27T00:10:31+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.25, "stderr": ""}
+{"t": "2026-11-27T00:10:31+00:00", "event": "stage_done", "stage": "s2", "mem_available_mb": 14907, "swap_free_mb": 3071, "vmhwm_mb": 77, "vmrss_mb": 76}
