@@ -203,8 +203,14 @@ def run(binary, job_path, inputs, output, resume=False):
             with Image.open(output / "before.png") as before:
                 if not ImageChops.difference(before.convert("RGBA"), after.convert("RGBA")).getbbox(alpha_only=False):
                     raise ValueError("PhotoCraft output did not change")
+    quality = json.loads((output / "quality.json").read_text()) if "quality_goal" in job else None
+    if quality:
+        with Image.open(output / quality["best_preview"]) as best, Image.open(output / "after.png") as after:
+            if best.size != after.size or ImageChops.difference(
+                    best.convert("RGBA"), after.convert("RGBA")).getbbox(alpha_only=False):
+                raise ValueError("Final preview does not match the best checkpoint")
     write_json(output / "verification.json", {
-        **evidence, "quality": json.loads((output / "quality.json").read_text()) if "quality_goal" in job else None,
+        **evidence, "quality": quality,
         "engine": job["engine"], "outputs": files, "source": source, "native_roundtrip": True,
         "actions_url": os.environ.get("ARTCRAFT_RUN_URL"), "approval": "pending",
     })
