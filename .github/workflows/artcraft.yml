@@ -1,7 +1,7 @@
 name: ArtCraft CPU
 on:
   push:
-    branches: [gpt/artcraft-resume, main]
+    branches: [gpt/artcraft-reference-review, main]
     paths:
       - .github/workflows/artcraft.yml
       - studio/artcraft.py
@@ -181,7 +181,7 @@ jobs:
       - name: Verify rejected edit restores the best native document
         if: steps.runtime.outputs.image != '' && matrix.engine == 'vectorcraft'
         run: |
-          jq '.quality_goal |= (del(.position) | .protected = [[45,46,52,53]])' \
+          jq '.quality_goal |= (del(.position, .stroke) | .protected = [[45,46,52,53]])' \
             jobs/artcraft/vectorcraft.json > artcraft-evidence/rollback-job.json
           docker run --rm --init --network none --read-only --cap-drop ALL \
             --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
