@@ -4,3 +4,4 @@
 {"t": "2026-11-27T10:21:38+00:00", "event": "round_done", "stage": "mage", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 3072, "swap_free_mb": 8322, "vmhwm_mb": 15041, "vmrss_mb": 11436}
 {"t": "2026-11-27T10:21:40+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.72, "stderr": ""}
 {"t": "2026-11-27T10:21:40+00:00", "event": "stage_done", "stage": "mage", "mem_available_mb": 3137, "swap_free_mb": 8322, "vmhwm_mb": 15041, "vmrss_mb": 11436}
+{"t": "2026-11-27T10:21:41+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.38, "stderr": ""}
