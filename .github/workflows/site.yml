@@ -5,7 +5,7 @@ on:
   push:
     branches: [main, studio-runs]
   workflow_run:
-    workflows: [produce]
+    workflows: [produce, ArtCraft CPU]
     types: [completed]
   workflow_dispatch:
 
@@ -15,11 +15,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.name == 'ArtCraft CPU' && github.event.workflow_run.head_branch != 'main' && format('pages-artcraft-{0}', github.run_id) || 'pages' }}
   cancel-in-progress: true
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.name != 'ArtCraft CPU' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

@@ -3,6 +3,7 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import tempfile
@@ -13,7 +14,7 @@ import xml.etree.ElementTree as ET
 from PIL import Image, ImageChops
 
 from .scan import clamscan, require_clamav, safe_extract
-from .util import sha256_file
+from .util import ID_RE, now_iso, sha256_file
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +94,7 @@ async def batch(binary, job, inputs, output):
     logs = []
     with (output / "mcp.stderr.log").open("w") as stderr:
         server = await asyncio.create_subprocess_exec(
-            binary, "mcp", "--headless",
+            binary, "mcp", *ENGINES[job["engine"]]["mcp_args"],
             "--automation-read-root", str(inputs),
             "--automation-read-root", str(output),
             "--automation-write-root", str(output),
@@ -120,6 +121,11 @@ async def batch(binary, job, inputs, output):
                 except Exception as error:
                     entry["error"] = str(error)
                     raise
+        except Exception:
+            stderr.flush()
+            if (output / "mcp.stderr.log").stat().st_size:
+                print((output / "mcp.stderr.log").read_text(errors="replace")[-4096:])
+            raise
         finally:
             server.stdin.close()
             try:
@@ -178,6 +184,45 @@ def run(binary, job_path, inputs, output):
     })
 
 
+
+def review(source, destination, run_id):
+    """Adapt verified public fixtures to the Studio review site's existing run format."""
+    if not ID_RE.fullmatch(run_id):
+        raise ValueError("Invalid Studio run ID")
+    result = json.loads((source / "verification.json").read_text())
+    engine = result["engine"]
+    if engine not in ENGINES or result["native_roundtrip"] is not True:
+        raise ValueError("Expected a verified ArtCraft fixture")
+    destination.mkdir()
+    with Image.open(source / "after.png") as after:
+        after.load()
+        shutil.copyfile(source / "after.png", destination / "after.png")
+        comparison = None
+        if (source / "before.png").is_file():
+            with Image.open(source / "before.png") as before:
+                comparison = "comparison.png"
+                panel = Image.new("RGBA", (before.width + after.width, max(before.height, after.height)))
+                panel.paste(before, (0, 0))
+                panel.paste(after, (before.width, 0))
+                panel.save(destination / comparison)
+    operations = json.loads((source / "operations.json").read_text())
+    editable = next(name for name in result["outputs"] if name.endswith((".pcraft", ".vectorcraft")))
+    shutil.copyfile(source / editable, destination / editable)
+    write_json(destination / "run.json", {
+        "run_id": run_id, "job_id": engine, "title": f"ArtCraft · {result['version']}",
+        "status": "done", "backend": engine, "runtime": "Docker / MCP",
+        "publish": True, "created_at": now_iso(), "finished_at": now_iso(),
+        "elapsed_min": round(result["seconds"] / 60, 3), "actions_runs": [result["actions_url"]],
+    })
+    write_json(destination / "state.json", {
+        "job": {"operations": [entry["operation"] for entry in operations]},
+        "stages": {"edit": {"status": "done", "stop_reason": "native roundtrip",
+                            "best": {"image": "after.png"}, "comparison": comparison}},
+    })
+    write_json(destination / "after.json", {"evaluation": {"note": "Native PNG roundtrip: pixel-identical"}})
+    write_json(destination / "artcraft.json", {**result, "editable": editable})
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="action", required=True)
@@ -190,9 +235,15 @@ def main():
     execution.add_argument("job", type=Path)
     execution.add_argument("inputs", type=Path)
     execution.add_argument("output", type=Path)
+    publication = commands.add_parser("review")
+    publication.add_argument("source", type=Path)
+    publication.add_argument("destination", type=Path)
+    publication.add_argument("run_id")
     args = parser.parse_args()
     if args.action == "prepare":
         prepare(args.engine, args.destination, args.evidence)
+    elif args.action == "review":
+        review(args.source, args.destination, args.run_id)
     else:
         run(args.binary, args.job, args.inputs.resolve(), args.output.resolve())
 

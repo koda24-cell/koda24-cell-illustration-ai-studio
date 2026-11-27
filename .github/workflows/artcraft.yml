@@ -73,3 +73,34 @@ jobs:
             artcraft-results/
             artcraft-evidence/
           retention-days: 2
+
+  save-review:
+    needs: edit
+    if: github.ref == 'refs/heads/main' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: studio-runs
+          path: runs-branch
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: artcraft-*
+          path: artcraft-artifacts
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements/base.txt
+      - name: Append public fixture results
+        run: |
+          for engine in photocraft vectorcraft; do
+            rid="artcraft-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$engine"
+            python -m studio.artcraft review \
+              "artcraft-artifacts/artcraft-$engine/artcraft-results/output" \
+              "runs-branch/runs/$rid" "$rid"
+          done
+          STUDIO_RUNS_REPO="$PWD/runs-branch" bash scripts/checkpoint_push.sh "artcraft-$GITHUB_RUN_ID"

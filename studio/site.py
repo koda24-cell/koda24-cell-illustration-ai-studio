@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .allowlist import Allowlist
-from .util import REPO_ROOT, load_json, load_yaml, now_iso
+from .util import ID_RE, REPO_ROOT, load_json, load_yaml, now_iso
 
 APPROVALS_FILE = REPO_ROOT / "approvals" / "approvals.yaml"
 
@@ -65,6 +65,7 @@ def collect(runs_dir: Path, al: Allowlist) -> dict[str, Any]:
                      "actions_runs": [x.get("actions_run_url") for x in sessions if x.get("actions_run_url")]
                                      or run.get("actions_runs") or [],
                      "timings": timings,
+                     "artcraft": load_json(rd / "artcraft.json", {}) if run.get("publish") is True else {},
                      "job": state.get("job"), "stages": stages,
                      "plan": (rd / "plan.md").read_text(encoding="utf-8") if (rd / "plan.md").exists() else ""})
     refs = [{"id": i.id, "path": i.raw.get("path"), "note": i.raw.get("note")}
@@ -91,6 +92,11 @@ def build(runs_dir: Path, out: Path, al: Allowlist) -> dict[str, Any]:
                     dst = out / "runs" / run["run_id"] / f
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src, dst)
+        meta = run["artcraft"]
+        editable = meta.get("editable", "")
+        if (ID_RE.fullmatch(run["run_id"]) and editable in {"editable.pcraft", "editable.vectorcraft"}
+                and (runs_dir / run["run_id"] / editable).is_file()):
+            shutil.copy2(runs_dir / run["run_id"] / editable, out / "runs" / run["run_id"] / editable)
     for r in data["references"]:
         src = REPO_ROOT / r["path"]
         if src.exists():
@@ -143,6 +149,10 @@ document.querySelectorAll('.run').forEach(e=>e.onclick=()=>show(e.dataset.id));}
 function img(run,p){return p?`runs/${encodeURIComponent(run)}/${p}`:''}
 function evalTable(e){if(!e)return'';return `<table><tr><th>指標</th><th>スコア</th><th>根拠</th><th>限界</th></tr>`+Object.entries(e.metrics||{}).map(([k,v])=>
 `<tr><td>${esc(k)}</td><td>${v.score??'—'}</td><td>${esc(v.rationale)}</td><td class="mute">${esc(v.limitations)}</td></tr>`).join('')+`</table><p class="mute">${esc(e.note)}</p>`}
+function artcraftInfo(r){const a=r.artcraft;if(!a?.native_roundtrip)return'';
+return `<p>${esc(a.version)} · ${esc(a.seconds)} 秒 · 保存・再読込で画素一致</p>
+<p><a href="${img(r.run_id,encodeURIComponent(a.editable))}" download>編集データ ${esc(a.editable)}</a></p>
+<details><summary>出力ファイルと検証結果</summary><pre>${esc(JSON.stringify(a.outputs,null,2))}</pre></details>`;}
 const CLIP=[];function copy(t){navigator.clipboard&&navigator.clipboard.writeText(t)}
 function btn(label,t){CLIP.push(t);return `<button onclick="copy(CLIP[${CLIP.length-1}])">${label}</button>`}
 function show(id){const r=D.runs.find(x=>x.run_id===id);document.querySelectorAll('.run').forEach(e=>e.classList.toggle('on',e.dataset.id===id));
@@ -154,6 +164,7 @@ ${(r.timings||[]).length?`<details><summary>実行時間の内訳</summary>${r.t
 <p class="mute">${esc(r.created_at)} → ${esc(r.finished_at)}</p>
 <p>使用モデル: ${(r.models||[]).map(m=>`<span class="tag">${esc(m.kind)}: ${esc(m.name||m.id)}</span>`).join('')||'<span class="mute">なし</span>'}</p>
 ${r.fatal_error?`<pre>${esc(JSON.stringify(r.fatal_error,null,1))}</pre>`:''}
+${artcraftInfo(r)}
 <details><summary>制作計画</summary><pre>${esc(r.plan)}</pre></details>
 <details><summary>制作指示（ジョブ）</summary><pre>${esc(JSON.stringify(r.job,null,1))}</pre>${btn('ジョブをコピー（再利用）',JSON.stringify(r.job,null,1))}</details></div>`;
 for(const s of r.stages){const best=s.rounds.flatMap(x=>x.candidates).find(c=>c.image===s.best.image)||{};const p=best.params||{};

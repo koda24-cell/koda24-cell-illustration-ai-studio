@@ -31,6 +31,29 @@
       }
     },
     {
+      "name": "draw_shape",
+      "arguments": {
+        "shape": "ellipse",
+        "x": 33,
+        "y": 3,
+        "width": 30,
+        "height": 24,
+        "fill": "#204e86"
+      }
+    },
+    {
+      "name": "run_command",
+      "arguments": {
+        "command": "select.all"
+      }
+    },
+    {
+      "name": "pathfinder",
+      "arguments": {
+        "operation": "unite"
+      }
+    },
+    {
       "name": "run_command",
       "arguments": {
         "command": "paint.setFill",
