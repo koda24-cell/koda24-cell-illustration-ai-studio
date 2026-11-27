@@ -89,4 +89,4 @@
 - **Flux / SD3 系**: CPU で 1 枚に数十分〜以上かかり実用外のため未対応。
 
 ## ArtCraft（PhotoCraft・VectorCraft）
-- 🟡 公式ヘッドレス MCP の公開テストジョブを実装。ジョブ、操作例、検証範囲は [ARTCRAFT.md](ARTCRAFT.md)。
+- ✅ 公開テストジョブで公式ヘッドレス MCP 編集、ネイティブ形式の再読み込みと PNG・SVG 出力を確認。ジョブ、操作例、検証範囲は [ARTCRAFT.md](ARTCRAFT.md)。
