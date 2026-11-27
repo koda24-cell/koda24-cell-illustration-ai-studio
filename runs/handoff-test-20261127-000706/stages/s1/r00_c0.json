@@ -1,0 +1,43 @@
+{
+  "run_id": "handoff-test-20261127-000706",
+  "stage": "s1",
+  "round": 0,
+  "candidate": 0,
+  "op": "txt2img",
+  "params": {
+    "width": 96,
+    "height": 96,
+    "steps": 8,
+    "cfg": 7.0,
+    "scheduler": "euler_a",
+    "negative_prompt": "",
+    "denoise": 0.5,
+    "sleep_seconds": 40,
+    "prompt": "test pattern 1",
+    "seed": 1775989295
+  },
+  "seconds": 40.01,
+  "load_seconds": 0.0,
+  "evaluation": {
+    "overall": 1.0,
+    "metrics": {
+      "artifacts": {
+        "score": 1.0,
+        "rationale": "兆候: 検出なし",
+        "limitations": "空白・極端な白飛び/黒つぶれ（外周につながる単色背景は除外）・高周波ノイズの兆候のみ。手指や人体の破綻は検出できない。",
+        "values": {
+          "issues": [],
+          "hf_energy": 0.0034,
+          "clipped_white": 0.0,
+          "clipped_black": 0.0
+        }
+      }
+    },
+    "weights_used": {
+      "artifacts": 1.5
+    },
+    "note": "自動評価は制作途中の改善用の参考値。美術的な完成度の判定や採用判断ではない。"
+  },
+  "created_at": "2026-11-27T00:07:46+00:00",
+  "backend": "procedural"
+}

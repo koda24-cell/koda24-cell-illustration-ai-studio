@@ -1,0 +1,2 @@
+{"t": "2026-11-27T00:07:06+00:00", "event": "session_start", "resumed": false, "remaining_min": 1.5}
+{"t": "2026-11-27T00:07:06+00:00", "event": "candidate_start", "stage": "s1", "round": 0, "candidate": 0, "mem_available_mb": 14780, "swap_free_mb": 3071, "vmhwm_mb": 47, "vmrss_mb": 47}
