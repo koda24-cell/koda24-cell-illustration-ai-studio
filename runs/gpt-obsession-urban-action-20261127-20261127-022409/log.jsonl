@@ -2,3 +2,5 @@
 {"t": "2026-11-27T02:24:10+00:00", "event": "candidate_start", "stage": "urban-action", "round": 0, "candidate": 0, "mem_available_mb": 14746, "swap_free_mb": 15359, "vmhwm_mb": 232, "vmrss_mb": 232}
 {"t": "2026-11-27T02:45:48+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.94, "stderr": ""}
 {"t": "2026-11-27T02:45:48+00:00", "event": "round_done", "stage": "urban-action", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 3204, "swap_free_mb": 7908, "vmhwm_mb": 15113, "vmrss_mb": 11556}
+{"t": "2026-11-27T02:45:50+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.68, "stderr": ""}
+{"t": "2026-11-27T02:45:50+00:00", "event": "stage_done", "stage": "urban-action", "mem_available_mb": 3193, "swap_free_mb": 7917, "vmhwm_mb": 15113, "vmrss_mb": 11556}
