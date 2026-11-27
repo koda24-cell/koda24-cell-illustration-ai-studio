@@ -1,0 +1,49 @@
+name: studio-push
+# プッシュで制作開始: jobs/queue/ に制作指示 YAML を追加・更新して push すると、その YAML を実行する。
+# どのブランチでも起動する（制作結果は studio-runs ブランチへ追記。main への反映は PR）。
+on:
+  push:
+    paths:
+      - "jobs/queue/**.yaml"
+      - "jobs/queue/**.yml"
+
+permissions:
+  contents: write
+  packages: read
+  actions: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      jobs: ${{ steps.d.outputs.jobs }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: d
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+            files=$(git show --name-only --diff-filter=AM --pretty=format: "$AFTER" -- 'jobs/queue/*.yaml' 'jobs/queue/*.yml' 'jobs/queue/**/*.yaml' 'jobs/queue/**/*.yml')
+          else
+            files=$(git diff --name-only --diff-filter=AM "$BEFORE" "$AFTER" -- 'jobs/queue/*.yaml' 'jobs/queue/*.yml' 'jobs/queue/**/*.yaml' 'jobs/queue/**/*.yml')
+          fi
+          json=$(printf '%s\n' $files | grep -v '^$' | jq -R . | jq -cs .)
+          echo "jobs=$json" >> "$GITHUB_OUTPUT"
+          echo "実行する制作指示: $json" >> "$GITHUB_STEP_SUMMARY"
+  run:
+    needs: detect
+    if: needs.detect.outputs.jobs != '[]' && needs.detect.outputs.jobs != ''
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        job: ${{ fromJSON(needs.detect.outputs.jobs) }}
+    uses: ./.github/workflows/studio-run.yml
+    with:
+      job: ${{ matrix.job }}
+      ref: ${{ github.sha }}
+    secrets: inherit

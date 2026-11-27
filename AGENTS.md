@@ -25,6 +25,8 @@ GitHub Actions の無料標準ランナー（CPU）だけで、AI イラスト�
 | 機能カタログ（対応モデル・入力・実行方法・検証状況） | `docs/FEATURE_CATALOG.md` |
 | モデル/画像の登録手順・必須依存 | `docs/MODEL_REGISTRATION.md` |
 | Actions 実行手順 | `docs/ACTIONS_GUIDE.md` |
+| 共通実行環境（イメージ digest・スワップ・引き継ぎ上限） | `config/runtime.yaml`, `Dockerfile`, `requirements/lock-cpu.txt` |
+| プッシュ起動用の制作指示置き場 | `jobs/queue/` |
 | 制作指示テンプレート | `docs/JOB_TEMPLATE.md`, `jobs/templates/` |
 | 成果物の保存ルール | `docs/STORAGE_RULES.md` |
 | 制作途中の引き継ぎ | `docs/HANDOFF.md` |
@@ -35,11 +37,21 @@ GitHub Actions の無料標準ランナー（CPU）だけで、AI イラスト�
 | 採用判断（ユーザーのみ） | `approvals/approvals.yaml` |
 | コード | `studio/`（CLI: `python -m studio --help`） |
 
+## 1.5 共通実行環境（すべてのイラストAI制作で使う）
+- 実行は **共通 Docker イメージ**（`config/runtime.yaml` の digest 固定、GHCR `ghcr.io/koda24-cell/illustration-ai-studio-cpu`）。PyTorch/Diffusers/Transformers/ClamAV 導入済みで、毎回の pip install は不要。
+- 制作の起動方法は2つ。どちらも**制作指示 YAML を書くだけ**（ワークフローを新規作成しない）:
+  1. **プッシュ起動**: `jobs/queue/<名前>.yaml` を追加/更新して push → `studio-push`
+  2. **手動起動**: Actions → `produce`（`job` に YAML パス、再開は `resume_run_id`）
+- 実体は再利用ワークフロー `studio-run`。時間切れ（1ジョブ最大345分）になると自動で `produce` を `resume_run_id` 付きで起動して続きから再開（`max_chain` 回まで）。
+- モデル本体はイメージに含めない。キャッシュは必要モデルの SHA256 集合をキーにした actions/cache で、復元後は毎回 SHA256 を全量照合。未取得時だけ ClamAV 検査付きで取得。
+- イメージ更新: `Dockerfile` / `requirements/lock-cpu.txt` 変更 → `build-image` が公開 → 出力 digest を `config/runtime.yaml` に PR で反映。
+- 旧方式（毎回 pip で構築）は `produce-native` として互換用に残す。
+
 ## 2. 作業の流れ
 1. ユーザーの指示を確認。モデル指定が無ければ**モデルを使わない範囲**（procedural バックエンド・画像処理）だけで進める。
 2. モデル指定を受けたら: `register-model` ワークフロー or `python -m studio allowlist-draft --url ... --instruction "..." --append` → PR → マージ → `fetch-models` が取得・検査・ハッシュ照合・キャッシュ。
 3. 制作指示を `jobs/` に YAML で作成（`docs/JOB_TEMPLATE.md`）。`python -m studio job-validate <job>` で許可リスト照合。
-4. `produce` ワークフローで実行（最大 345 分 + 準備）。途中保存は `studio-runs` へ自動 push、`resume_run_id` で再開。
+4. `jobs/queue/` に置いて push、または `produce` を手動起動（1ジョブ最大 345 分）。途中保存は `studio-runs` へ自動 push、時間切れは自動引き継ぎ、強制終了時は `resume_run_id` で再開。
 5. `site` ワークフローが制作確認サイトを更新。結果・評価・限界をユーザーに報告し、採否はユーザーに委ねる。
 6. 機能を検証したら `docs/VERIFICATION.md` と `docs/FEATURE_CATALOG.md` の状態を更新（証拠: Actions run URL）。
 

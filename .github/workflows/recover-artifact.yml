@@ -1,0 +1,35 @@
+name: recover-artifact
+# 最終保存（studio-runs への push）に失敗したランを、Actions の成果物（Artifacts, 30日保存）から studio-runs へ復元する。
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id: {description: "成果物を持つ Actions の run ID（数字）", required: true}
+      artifact_name: {description: "成果物名（run-<run_id>...）", required: true}
+      run_dir: {description: "復元先の runs/<run_id> 名", required: true}
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout studio-runs
+        run: git clone -q --depth 1 --branch studio-runs "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" runs-branch
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          run-id: ${{ inputs.source_run_id }}
+          github-token: ${{ github.token }}
+          path: recovered
+      - name: Copy without overwriting existing files, then push
+        env: { RUN_DIR: "${{ inputs.run_dir }}" }
+        run: |
+          case "$RUN_DIR" in *..*|*/*|"") echo "::error::run_dir が不正"; exit 1;; esac
+          mkdir -p "runs-branch/runs/$RUN_DIR"
+          cp -rn recovered/. "runs-branch/runs/$RUN_DIR/"
+          echo "{\"recovered_from_actions_run\": \"${{ inputs.source_run_id }}\", \"artifact\": \"${{ inputs.artifact_name }}\"}" > "runs-branch/runs/$RUN_DIR/recovered.json"
+          STUDIO_RUNS_REPO="$PWD/runs-branch" bash scripts/checkpoint_push.sh "$RUN_DIR"

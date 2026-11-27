@@ -71,6 +71,18 @@
 
 全指標に「根拠」と「限界」を記録し、数値だけで美術的完成度を断定しません。最終判断はユーザー。
 
+## 実行基盤（共通 Docker）
+| 機能 | 状態 |
+|---|---|
+| 共通イメージ（GHCR, digest 固定・Public）で実行、毎回の pip 不要 | ✅ |
+| プッシュ起動（`jobs/queue/*.yaml`）/ 手動起動（`produce`）/ 再利用ワークフロー（`studio-run`） | ✅ |
+| モデルキャッシュ（必要モデルの SHA256 集合キー）・復元後の SHA256 全量照合・未取得時のみ ClamAV 取得 | ✅（キャッシュ時）／ 🟡 イメージ内での新規取得はゲートのみ確認（EICAR） |
+| 同一ジョブ内のモデル再利用（生成・Inpaint・img2img・Outpaint で読込1回） | ✅ |
+| 時間切れ時の自動引き継ぎ（resume 付き produce 起動, 最大 `max_chain` 回） | ✅ |
+| 計時（準備・取得・復元・検査・読込・1枚目・2枚目以降・保存）を記録しサイト表示 | ✅ |
+| 成果物からの studio-runs 復元（`recover-artifact`） | 🟡 |
+| 旧方式（毎回 pip）`produce-native` | ✅（互換用） |
+
 ## 未採用・代替
 - **Stable Diffusion WebUI（A1111/Forge）**: 起動時に既定モデルを自動ダウンロードする挙動があり許可リスト制と衝突、かつ GUI 前提で Actions 向きでないため、**同等機能を Diffusers の CLI 実装で代替**。
 - **Stability Matrix**: GUI のモデル管理ツール。**許可リスト＋台帳＋取得/検査/キャッシュ（`studio` CLI）で代替**。

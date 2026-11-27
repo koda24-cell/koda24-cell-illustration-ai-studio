@@ -1,0 +1,11 @@
+# 共通 Docker イメージ（CPU）の固定バージョン。2026-11-27 に Obsession 実生成で動作確認した組み合わせ。
+# 変更したらイメージを再ビルドし、config/runtime.yaml の digest を更新する。
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0+cpu
+torchvision==0.29.2+cpu
+diffusers==0.43.0
+transformers==5.24.1
+accelerate==1.16.0
+safetensors==0.8.0
+peft==0.22.0
+spandrel==0.4.2

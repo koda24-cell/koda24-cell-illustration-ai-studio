@@ -1,0 +1,163 @@
+name: produce-native
+# 【旧方式・互換用】毎回 pip で生成環境を構築するネイティブ実行。通常は produce（共通Dockerイメージ）を使う。
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "ジョブYAMLのパス（例: jobs/examples/selftest-procedural.yaml）"
+        required: false
+        default: jobs/examples/selftest-procedural.yaml
+      resume_run_id:
+        description: "再開するrun_id（空なら新規）"
+        required: false
+        default: ""
+      time_budget:
+        description: "時間予算（分, 最大345）"
+        required: false
+        default: "60"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: produce-runs-branch
+  cancel-in-progress: false
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      STUDIO_CACHE: ${{ github.workspace }}/.cache/studio
+      STUDIO_RUNS_REPO: ${{ github.workspace }}/runs-branch
+      STUDIO_RUNS_DIR: ${{ github.workspace }}/runs-branch/runs
+      STUDIO_LEDGER_FILE: ${{ github.workspace }}/runs-branch/ledger/model_ledger.yaml
+      STUDIO_CHECKPOINT_CMD: bash ${{ github.workspace }}/scripts/checkpoint_push.sh
+      STUDIO_CHECKPOINT_INTERVAL_SEC: "300"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+      - run: pip install -r requirements/base.txt
+      - name: Budget guard
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TB: ${{ inputs.time_budget }}
+        run: |
+          python -m studio budget-check --minutes "$(python -c "import os;print(min(float(os.environ['TB']),345)+15)")"
+      - name: Checkout studio-runs branch (create if missing; never force)
+        run: |
+          if git ls-remote --exit-code --heads origin studio-runs >/dev/null; then
+            git clone -q --depth 1 --branch studio-runs "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" runs-branch
+          else
+            mkdir runs-branch
+            git -C runs-branch init -q -b studio-runs
+            git -C runs-branch remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+            echo "# 制作結果（削除禁止・追記のみ）" > runs-branch/README.md
+          fi
+          mkdir -p runs-branch/runs runs-branch/ledger
+          [ -f runs-branch/ledger/model_ledger.yaml ] || cp catalog/model_ledger.yaml runs-branch/ledger/model_ledger.yaml
+      - name: Resolve job and models
+        id: job
+        env:
+          RESUME: ${{ inputs.resume_run_id }}
+          JOB_IN: ${{ inputs.job }}
+        run: |
+          if [ -n "$RESUME" ]; then
+            python -c "import json,os,yaml;s=json.load(open(f'runs-branch/runs/{os.environ[\"RESUME\"]}/state.json'));yaml.safe_dump(s['job'],open('resume_job.yaml','w'),allow_unicode=True)"
+            JOB=resume_job.yaml
+          else
+            JOB="$JOB_IN"
+          fi
+          python -m studio job-validate "$JOB" | tee validate.json
+          # Public リポジトリでは非公開画像から派生する生成物を studio-runs（公開）に保存できないため停止
+          if [ "${{ github.event.repository.private }}" != "true" ] && \
+             [ -n "$(python -c "import json;print(' '.join(json.load(open('validate.json'))['private_derivative_sources']))")" ]; then
+            echo "::error::非公開画像（public_ok/derivatives_public_ok=false）から派生する制作は Public リポジトリでは実行しません"; exit 1
+          fi
+          echo "backend=$(python -c "import yaml;print(yaml.safe_load(open('$JOB')).get('backend','diffusers'))")" >> "$GITHUB_OUTPUT"
+          echo "models=$(python -c "import json;print(' '.join(json.load(open('validate.json'))['models']))")" >> "$GITHUB_OUTPUT"
+      - name: Install generation stack (CPU)
+        if: steps.job.outputs.backend == 'diffusers'
+        run: |
+          bash scripts/free_disk.sh
+          bash scripts/add_swap.sh 12
+          pip install -r requirements/gen.txt
+          pip freeze | grep -iE "torch|diffusers|transformers|accelerate|safetensors|peft|spandrel" | tee gen_versions.txt
+      - name: Restore model cache
+        if: steps.job.outputs.models != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/studio/models
+          key: models-${{ hashFiles('allowlist/models.yaml') }}
+          restore-keys: models-
+      - name: Prepare ClamAV DB dir (cache restore needs write access)
+        if: steps.job.outputs.models != ''
+        run: sudo mkdir -p /var/lib/clamav && sudo chown -R "$USER" /var/lib/clamav
+      - name: Restore ClamAV DB
+        if: steps.job.outputs.models != ''
+        uses: actions/cache@v4
+        with:
+          path: /var/lib/clamav
+          key: clamav-db-${{ github.run_id }}
+          restore-keys: clamav-db-
+      - name: Fetch missing allowlisted models (scan gate)
+        if: steps.job.outputs.models != ''
+        env:
+          CIVITAI_API_TOKEN: ${{ secrets.CIVITAI_API_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_HUB_OFFLINE: "0"
+        run: |
+          bash scripts/setup_clamav.sh
+          python -m studio models-fetch --only ${{ steps.job.outputs.models }} --report fetch_report.json
+          python -m studio models-verify
+      - name: Run production session
+        id: run
+        env:
+          STUDIO_INPUT_KEY: ${{ secrets.STUDIO_INPUT_KEY }}
+          RESUME: ${{ inputs.resume_run_id }}
+          JOB_IN: ${{ inputs.job }}
+          TB: ${{ inputs.time_budget }}
+        run: |
+          set +e
+          if [ -n "$RESUME" ]; then
+            python -m studio run --resume "$RESUME" --time-budget "$TB"
+          else
+            python -m studio run "$JOB_IN" --time-budget "$TB"
+          fi
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+      - name: Final save to studio-runs
+        if: always()
+        run: |
+          [ -f gen_versions.txt ] && [ -n "${{ steps.run.outputs.run_id }}" ] && cp gen_versions.txt "runs-branch/runs/${{ steps.run.outputs.run_id }}/" || true
+          bash scripts/checkpoint_push.sh "${{ steps.run.outputs.run_id }}"
+      - name: Summary
+        if: always()
+        run: |
+          RID="${{ steps.run.outputs.run_id }}"
+          echo "### produce: \`$RID\` → **${{ steps.run.outputs.status }}**" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$RID" ]; then
+            python - "$RID" <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, sys
+          r = json.load(open(f"runs-branch/runs/{sys.argv[1]}/run.json"))
+          print(f"- 経過 {r['elapsed_min']} 分 / 復旧 {r['errors_recovered']} 回 / モデル {[m['id'] for m in r['models']]}")
+          for k, v in r["stages"].items():
+              print(f"- **{k}**: {v['status']} ({v['stop_reason']}) best={ (v.get('best') or {}).get('score') }")
+          if r.get("fatal_error"): print(f"- エラー: `{r['fatal_error'].get('code')}` {r['fatal_error'].get('analysis')}")
+          print("\n再開: produce を resume_run_id=" + sys.argv[1] + " で実行")
+          EOF
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.run.outputs.run_id != ''
+        with:
+          name: run-${{ steps.run.outputs.run_id }}
+          path: runs-branch/runs/${{ steps.run.outputs.run_id }}
+          retention-days: 30
+      - name: Fail if run failed
+        if: steps.run.outputs.exit != '0'
+        run: exit 1

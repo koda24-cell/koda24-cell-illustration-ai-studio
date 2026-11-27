@@ -1,0 +1,232 @@
+name: studio-run
+# 共通の制作実行ワークフロー（再利用可能）。produce（手動）・studio-push（プッシュ起動）から呼ばれる。
+# 共通 Docker イメージ（config/runtime.yaml の digest 固定）で実行し、ライブラリの再インストールを不要にする。
+# モデル本体はイメージと分離（許可リスト → ClamAV → SHA256 → actions/cache）。
+on:
+  workflow_call:
+    inputs:
+      job: {type: string, required: false, default: ""}
+      resume_run_id: {type: string, required: false, default: ""}
+      time_budget: {type: string, required: false, default: ""}
+      chain_depth: {type: string, required: false, default: "0"}
+      ref: {type: string, required: false, default: ""}
+    secrets:
+      CIVITAI_API_TOKEN: {required: false}
+      HF_TOKEN: {required: false}
+      STUDIO_INPUT_KEY: {required: false}
+    outputs:
+      run_id: {value: "${{ jobs.studio.outputs.run_id }}"}
+      status: {value: "${{ jobs.studio.outputs.status }}"}
+
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: write
+      packages: read
+      actions: write
+    concurrency:
+      group: studio-${{ inputs.resume_run_id || github.run_id }}-${{ inputs.job }}
+      cancel-in-progress: false
+    outputs:
+      run_id: ${{ steps.run.outputs.run_id }}
+      status: ${{ steps.run.outputs.status }}
+    env:
+      STUDIO_RUNTIME: docker
+      STUDIO_RUNS_REPO: /work/runs-branch
+      STUDIO_RUNS_DIR: /work/runs-branch/runs
+      STUDIO_LEDGER_FILE: /work/runs-branch/ledger/model_ledger.yaml
+      STUDIO_CHECKPOINT_CMD: bash /work/scripts/checkpoint_push.sh
+      STUDIO_CHECKPOINT_INTERVAL_SEC: "300"
+      STUDIO_ACTIONS_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      MARKS: ${{ github.workspace }}/.timing_marks.jsonl
+    steps:
+      - name: Mark start
+        run: echo "{\"mark\":\"job_start\",\"t\":$(date +%s)}" >> "$MARKS"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Resolve pinned image
+        id: img
+        run: |
+          img=$(grep -E '^image:' config/runtime.yaml | awk '{print $2}')
+          tag=$(grep -E '^tag:' config/runtime.yaml | awk '{print $2}')
+          dig=$(grep -E '^digest:' config/runtime.yaml | awk '{print $2}' | tr -d '"')
+          if [ -n "$dig" ]; then ref="$img@$dig"; else ref="$img:$tag"; fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "STUDIO_IMAGE=$ref" >> "$GITHUB_ENV"
+          echo "swap=$(grep -E '^swap_gb:' config/runtime.yaml | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+          echo "max_chain=$(grep -E '^max_chain:' config/runtime.yaml | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+          df -h / | tail -1
+      - name: Pull shared image (GHCR)
+        run: |
+          t0=$(date +%s)
+          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin >/dev/null 2>&1 || true
+          docker pull -q "$STUDIO_IMAGE"
+          docker image inspect "$STUDIO_IMAGE" --format 'size={{.Size}} id={{.Id}}'
+          echo "{\"mark\":\"image_pull\",\"seconds\":$(( $(date +%s) - t0 ))}" >> "$MARKS"
+      - name: Budget guard
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TB: ${{ inputs.time_budget }}
+        run: |
+          m=$(python3 -c "import os;t=os.environ.get('TB') or '340';print(min(float(t),340)+15)")
+          bash scripts/in_image.sh python -m studio budget-check --minutes "$m"
+      - name: Checkout studio-runs branch (append only)
+        run: |
+          url="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git ls-remote --exit-code --heads origin studio-runs >/dev/null; then
+            git clone -q --depth 1 --branch studio-runs "$url" runs-branch
+          else
+            mkdir runs-branch; git -C runs-branch init -q -b studio-runs; git -C runs-branch remote add origin "$url"
+            echo "# 制作結果（削除禁止・追記のみ）" > runs-branch/README.md
+          fi
+          mkdir -p runs-branch/runs runs-branch/ledger
+          [ -f runs-branch/ledger/model_ledger.yaml ] || cp catalog/model_ledger.yaml runs-branch/ledger/model_ledger.yaml
+      - name: Resolve job, validate against allowlist
+        id: job
+        env:
+          RESUME: ${{ inputs.resume_run_id }}
+          JOB_IN: ${{ inputs.job }}
+        run: |
+          if [ -n "$RESUME" ]; then
+            python3 -c "import json,os;s=json.load(open(f'runs-branch/runs/{os.environ[\"RESUME\"]}/state.json'));json.dump(s['job'],open('resume_job.json','w'),ensure_ascii=False)"
+            JOB=resume_job.json
+          else
+            JOB="$JOB_IN"
+          fi
+          test -n "$JOB" || { echo "::error::job か resume_run_id が必要"; exit 1; }
+          bash scripts/in_image.sh python -m studio job-validate "$JOB" | tee validate.json
+          if [ "${{ github.event.repository.private }}" != "true" ] && [ "$(jq -r '.private_derivative_sources|length' validate.json)" != "0" ]; then
+            echo "::error::非公開画像から派生する制作は Public リポジトリでは実行しません"; exit 1
+          fi
+          echo "job=$JOB" >> "$GITHUB_OUTPUT"
+          echo "models=$(jq -r '.models|join(" ")' validate.json)" >> "$GITHUB_OUTPUT"
+          bash scripts/in_image.sh python -m studio cache-key --models $(jq -r '.models|join(" ")' validate.json) | tee ck.json
+          echo "cache_key=$(jq -r .key ck.json)" >> "$GITHUB_OUTPUT"
+      - name: Prepare host (swap / disk)
+        if: steps.job.outputs.models != ''
+        run: |
+          avail=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+          if [ "$avail" -lt 30 ]; then bash scripts/free_disk.sh; fi
+          bash scripts/add_swap.sh "${{ steps.img.outputs.swap }}"
+      - name: Restore model cache
+        id: cache
+        if: steps.job.outputs.models != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/studio/models
+          key: ${{ steps.job.outputs.cache_key }}
+          restore-keys: |
+            models-v2-
+            models-
+      - name: Mark cache restored
+        if: steps.job.outputs.models != ''
+        run: du -sh .cache/studio/models 2>/dev/null || true
+      - name: Verify cached models (SHA256) / fetch missing (ClamAV gate)
+        id: models
+        if: steps.job.outputs.models != ''
+        env:
+          CIVITAI_API_TOKEN: ${{ secrets.CIVITAI_API_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          t0=$(date +%s)
+          # キャッシュ復元後は毎回 SHA256 を全量照合する（キャッシュ内の検証済み印は信用しない）
+          find .cache/studio/models -name .verified -delete 2>/dev/null || true
+          if bash scripts/in_image.sh python -m studio models-verify > verify.json; then
+            echo "fetched=false" >> "$GITHUB_OUTPUT"
+            echo "{\"mark\":\"model_verify_sha256\",\"seconds\":$(( $(date +%s) - t0 ))}" >> "$MARKS"
+          else
+            cat verify.json
+            HF_HUB_OFFLINE=0 bash scripts/in_image.sh bash -c "bash scripts/clamav_update.sh && python -m studio models-fetch --only ${{ steps.job.outputs.models }} --report fetch_report.json && python -m studio models-verify"
+            echo "fetched=true" >> "$GITHUB_OUTPUT"
+            echo "{\"mark\":\"model_fetch_scan_verify\",\"seconds\":$(( $(date +%s) - t0 ))}" >> "$MARKS"
+          fi
+      - name: Fix ownership of files written in container
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" . || true
+      - name: Save model cache (only when newly fetched)
+        if: steps.models.outputs.fetched == 'true' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/studio/models
+          key: ${{ steps.job.outputs.cache_key }}
+      - name: Run production session (in shared image)
+        id: run
+        env:
+          STUDIO_INPUT_KEY: ${{ secrets.STUDIO_INPUT_KEY }}
+          RESUME: ${{ inputs.resume_run_id }}
+          TB: ${{ inputs.time_budget }}
+        run: |
+          set +e
+          args=()
+          [ -n "$TB" ] && args+=(--time-budget "$TB")
+          if [ -n "$RESUME" ]; then
+            bash scripts/in_image.sh python -m studio run --resume "$RESUME" "${args[@]}" | tee run_out.json
+          else
+            bash scripts/in_image.sh python -m studio run "${{ steps.job.outputs.job }}" "${args[@]}" | tee run_out.json
+          fi
+          rc=${PIPESTATUS[0]}
+          echo "exit=$rc" >> "$GITHUB_OUTPUT"
+          echo "run_id=$(jq -r .run_id run_out.json 2>/dev/null)" >> "$GITHUB_OUTPUT"
+          echo "status=$(jq -r .status run_out.json 2>/dev/null)" >> "$GITHUB_OUTPUT"
+      - name: Final save to studio-runs (with timings)
+        if: always() && steps.run.outputs.run_id != '' && steps.run.outputs.run_id != 'null'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          STUDIO_TIMING_MARKS: ${{ github.workspace }}/.timing_marks.jsonl
+          RID: ${{ steps.run.outputs.run_id }}
+        run: |
+          t0=$(date +%s)
+          sudo chown -R "$(id -u):$(id -g)" runs-branch
+          python3 scripts/collect_timings.py "runs-branch/runs/$RID" > /dev/null
+          STUDIO_RUNS_REPO="$GITHUB_WORKSPACE/runs-branch" bash scripts/checkpoint_push.sh "$RID"
+          echo "final save: $(( $(date +%s) - t0 ))s"
+      - name: Summary
+        if: always() && steps.run.outputs.run_id != '' && steps.run.outputs.run_id != 'null'
+        env: { RID: "${{ steps.run.outputs.run_id }}" }
+        run: |
+          echo "### studio-run: \`$RID\` → **${{ steps.run.outputs.status }}**（image \`${STUDIO_IMAGE}\`）" >> "$GITHUB_STEP_SUMMARY"
+          python3 - "$RID" <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, sys, glob
+          d = f"runs-branch/runs/{sys.argv[1]}"
+          r = json.load(open(f"{d}/run.json"))
+          print(f"- 経過 {r['elapsed_min']} 分 / 復旧 {r['errors_recovered']} 回 / モデル {[m['id'] for m in r['models']]}")
+          print(f"- 計時: {r.get('timing')}")
+          for k, v in r["stages"].items():
+              print(f"- **{k}**: {v['status']} ({v['stop_reason']}) best={(v.get('best') or {}).get('score')}")
+          if r.get("fatal_error"): print(f"- エラー: `{r['fatal_error'].get('code')}` {r['fatal_error'].get('analysis')}")
+          for t in sorted(glob.glob(f"{d}/timings-*.json"))[-1:]:
+              tj = json.load(open(t))
+              print("\n| ステップ | 秒 |\n|---|---|")
+              for s in tj.get("steps", []):
+                  print(f"| {s['name']} | {s['seconds']} |")
+              for m in tj.get("marks", []):
+                  print(f"| (mark) {m.get('mark')} | {m.get('seconds','')} |")
+          EOF
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.run.outputs.run_id != '' && steps.run.outputs.run_id != 'null'
+        with:
+          name: run-${{ steps.run.outputs.run_id }}-${{ github.run_id }}
+          path: runs-branch/runs/${{ steps.run.outputs.run_id }}
+          retention-days: 30
+      - name: Hand off to next job (time budget exhausted → resume)
+        if: steps.run.outputs.status == 'time_budget_exhausted'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RID: ${{ steps.run.outputs.run_id }}
+          DEPTH: ${{ inputs.chain_depth }}
+          MAXC: ${{ steps.img.outputs.max_chain }}
+          TB: ${{ inputs.time_budget }}
+        run: |
+          next=$(( ${DEPTH:-0} + 1 ))
+          if [ "$next" -gt "${MAXC:-3}" ]; then
+            echo "::warning::自動引き継ぎ上限（$MAXC 回）に達したため停止。続けるには produce を resume_run_id=$RID で手動起動"; exit 0
+          fi
+          gh workflow run produce.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" \
+            -f resume_run_id="$RID" -f time_budget="${TB:-}" -f chain_depth="$next"
+          echo "引き継ぎジョブを起動しました（$next/$MAXC）: resume_run_id=$RID" >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail if run failed
+        if: steps.run.outputs.exit != '0'
+        run: exit 1

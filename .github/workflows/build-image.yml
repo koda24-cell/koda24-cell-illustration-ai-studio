@@ -1,0 +1,90 @@
+name: build-image
+# 共通制作イメージ（CPU）を GHCR に公開する。Dockerfile / 固定バージョンが変わったときだけ再ビルド。
+# 公開後の digest を config/runtime.yaml に PR で反映して固定する。
+on:
+  push:
+    branches: [main, feat/docker-shared-runtime]
+    paths: [Dockerfile, requirements/base.txt, requirements/lock-cpu.txt, .github/workflows/build-image.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-image-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/koda24-cell/illustration-ai-studio-cpu:cpu-v1
+            ghcr.io/koda24-cell/illustration-ai-studio-cpu:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+      - name: Record digest
+        run: |
+          echo "### 公開した共通イメージ" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`ghcr.io/koda24-cell/illustration-ai-studio-cpu@${{ steps.build.outputs.digest }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "config/runtime.yaml の digest にこの値を設定してください。" >> "$GITHUB_STEP_SUMMARY"
+  smoke:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull by digest and run selftest (no pip install)
+        env:
+          STUDIO_IMAGE: ghcr.io/koda24-cell/illustration-ai-studio-cpu@${{ needs.publish.outputs.digest }}
+        run: |
+          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          t0=$(date +%s); docker pull -q "$STUDIO_IMAGE"; echo "pull: $(( $(date +%s) - t0 ))s"
+          docker image inspect "$STUDIO_IMAGE" --format 'size={{.Size}}'
+          bash scripts/in_image.sh python -c "import torch, diffusers, transformers, peft, spandrel; print(torch.__version__, diffusers.__version__, transformers.__version__)"
+          bash scripts/in_image.sh python -m pytest -q
+          bash scripts/in_image.sh python -m studio selftest --runs-dir /tmp/runs --run-id image-smoke
+          bash scripts/in_image.sh clamscan --version
+          bash scripts/in_image.sh bash scripts/clamav_update.sh
+      - name: ClamAV gate inside image (clean passes, EICAR quarantined)
+        env:
+          STUDIO_IMAGE: ghcr.io/koda24-cell/illustration-ai-studio-cpu@${{ needs.publish.outputs.digest }}
+        run: |
+          mkdir -p q && echo hello > q/clean.txt
+          printf '%s' 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > q/eicar.txt
+          bash scripts/in_image.sh bash -c "bash scripts/clamav_update.sh >/dev/null && python -m studio scan q/clean.txt && { python -m studio scan q/eicar.txt > q/e.json; test \$? = 1; } && grep -q QUARANTINED_DETECTION q/e.json && echo IMAGE_CLAMAV_GATE_OK"
+      - name: Visibility check (anonymous pull)
+        run: |
+          docker logout ghcr.io >/dev/null 2>&1 || true
+          if docker manifest inspect ghcr.io/koda24-cell/illustration-ai-studio-cpu:cpu-v1 >/dev/null 2>&1; then
+            echo "GHCR package is PUBLIC（無料・認証なしで取得可）" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::GHCR package is PRIVATE。無料枠（Private パッケージの容量）を消費するため Public に設定してください"
+            echo "GHCR package is PRIVATE" >> "$GITHUB_STEP_SUMMARY"
+          fi

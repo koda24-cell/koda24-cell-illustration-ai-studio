@@ -51,9 +51,20 @@ def collect(runs_dir: Path, al: Allowlist) -> dict[str, Any]:
                 "rounds": rounds, "approval": ap.get("status", "未承認"), "approval_note": ap.get("note"),
                 "assigned_to": ap.get("assigned_to") or (run.get("assign_to") or {}).get("targets") or [],
             })
+        timings = []
+        for tf in sorted(rd.glob("timings-*.json")):
+            tj = load_json(tf, {})
+            timings.append({"actions_run": tj.get("actions_run"), "runtime": tj.get("runtime"),
+                            "steps": [x for x in tj.get("steps", []) if x.get("seconds")],
+                            "marks": tj.get("marks", []), "session": tj.get("session")})
+        sessions = state.get("sessions") or []
         runs.append({**{k: run.get(k) for k in ("run_id", "job_id", "title", "status", "backend", "backend_info",
                                                  "created_at", "finished_at", "elapsed_min", "models",
-                                                 "errors_recovered", "fatal_error", "assign_to")},
+                                                 "errors_recovered", "fatal_error", "assign_to", "timing")},
+                     "runtime": run.get("runtime") or (sessions[-1].get("runtime") if sessions else None) or "native",
+                     "actions_runs": [x.get("actions_run_url") for x in sessions if x.get("actions_run_url")]
+                                     or run.get("actions_runs") or [],
+                     "timings": timings,
                      "job": state.get("job"), "stages": stages,
                      "plan": (rd / "plan.md").read_text(encoding="utf-8") if (rd / "plan.md").exists() else ""})
     refs = [{"id": i.id, "path": i.raw.get("path"), "note": i.raw.get("note")}
@@ -136,7 +147,10 @@ const CLIP=[];function copy(t){navigator.clipboard&&navigator.clipboard.writeTex
 function btn(label,t){CLIP.push(t);return `<button onclick="copy(CLIP[${CLIP.length-1}])">${label}</button>`}
 function show(id){const r=D.runs.find(x=>x.run_id===id);document.querySelectorAll('.run').forEach(e=>e.classList.toggle('on',e.dataset.id===id));
 let h=`<div class="card"><h2 style="margin:0 0 6px">${esc(r.title||r.job_id)}</h2><span class="tag">${esc(r.status)}</span><span class="tag">${esc(r.backend)}</span>
-<span class="tag">${r.elapsed_min??'-'} 分</span><span class="tag">復旧 ${r.errors_recovered??0} 回</span>
+<span class="tag">${r.elapsed_min??'-'} 分</span><span class="tag">復旧 ${r.errors_recovered??0} 回</span><span class="tag">${esc(r.runtime)}</span>
+${(r.actions_runs||[]).map((u,i)=>`<a class="tag" href="${esc(u)}" target="_blank" rel="noopener">Actions #${i+1}</a>`).join('')}
+${r.timing&&r.timing.first_generation_seconds?`<p class="mute">モデル読込 ${r.timing.model_load_seconds_total}s · 1枚目 ${Math.round(r.timing.first_generation_seconds)}s · 2枚目以降平均 ${r.timing.later_generation_seconds_avg??'—'}s</p>`:''}
+${(r.timings||[]).length?`<details><summary>実行時間の内訳</summary>${r.timings.map(t=>`<p><a href="${esc(t.actions_run)}" target="_blank" rel="noopener">${esc(t.actions_run)}</a></p><table>${t.steps.map(s=>`<tr><td>${esc(s.name)}</td><td>${s.seconds}s</td></tr>`).join('')}${(t.marks||[]).filter(m=>m.seconds!=null).map(m=>`<tr><td class="mute">${esc(m.mark)}</td><td>${m.seconds}s</td></tr>`).join('')}</table>`).join('')}</details>`:''}
 <p class="mute">${esc(r.created_at)} → ${esc(r.finished_at)}</p>
 <p>使用モデル: ${(r.models||[]).map(m=>`<span class="tag">${esc(m.kind)}: ${esc(m.name||m.id)}</span>`).join('')||'<span class="mute">なし</span>'}</p>
 ${r.fatal_error?`<pre>${esc(JSON.stringify(r.fatal_error,null,1))}</pre>`:''}

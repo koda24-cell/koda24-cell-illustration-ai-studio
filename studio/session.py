@@ -100,7 +100,8 @@ class Session:
         return self.state.get("elapsed_before_min", 0.0) + (self.clock() - self.t_start) / 60
 
     def remaining_min(self) -> float:
-        return self.job["time_budget_minutes"] - self.elapsed_min()
+        """時間予算は「このセッション（=1回の Actions ジョブ）」あたり。再開・引き継ぎごとに予算が回復する。"""
+        return self.job["time_budget_minutes"] - (self.clock() - self.t_start) / 60
 
     def log(self, event: str, **kw: Any) -> None:
         append_jsonl(self.dir / "log.jsonl", {"t": now_iso(), "event": event, **kw})
@@ -112,8 +113,9 @@ class Session:
         cmd = os.environ.get("STUDIO_CHECKPOINT_CMD")
         if cmd and (force_ckpt or self.clock() - self._last_ckpt >= interval):
             self._last_ckpt = self.clock()
+            t0 = time.time()
             r = subprocess.run([*cmd.split(), str(self.dir)], capture_output=True, text=True)
-            self.log("checkpoint", exit_code=r.returncode, stderr=r.stderr[-500:])
+            self.log("checkpoint", exit_code=r.returncode, seconds=round(time.time() - t0, 2), stderr=r.stderr[-500:])
 
     # ---------- 計画 ----------
     def write_plan(self, validation: dict[str, Any]) -> None:
@@ -185,7 +187,9 @@ class Session:
         else:
             self.state["elapsed_before_min"] = self.state.get("elapsed_total_min", 0.0)
             self.state["status"] = "running"
-        self.state["sessions"].append({"started_at": now_iso(), "resumed": self.resumed})
+        self.state["sessions"].append({"started_at": now_iso(), "resumed": self.resumed,
+                                       "actions_run_url": os.environ.get("STUDIO_ACTIONS_RUN_URL"),
+                                       "runtime": os.environ.get("STUDIO_RUNTIME", "native")})
         self.log("session_start", resumed=self.resumed, remaining_min=round(self.remaining_min(), 1))
         refs = [self.resolve_image(r, "reference") for r in self.job["evaluation"].get("references") or []]
         self._refs = refs
@@ -444,9 +448,28 @@ class Session:
             "publish": bool(self.job.get("publish", True)),
             "assign_to": self.job.get("assign_to") or {},
             "approval": "unapproved（approvals/approvals.yaml でユーザーのみ変更）",
+            "actions_runs": [x.get("actions_run_url") for x in self.state.get("sessions", []) if x.get("actions_run_url")],
+            "runtime": os.environ.get("STUDIO_RUNTIME", "native"),
+            "timing": self._timing_summary(),
             "has_private_inputs": bool(private),
         }
         dump_json(self.dir / "run.json", summary)
+
+    def _timing_summary(self) -> dict[str, Any]:
+        """候補ごとの生成時間（1枚目 / 2枚目以降）とモデル読込時間。"""
+        gens, loads = [], []
+        for name, ss in self.state["stages"].items():
+            for rr in ss.get("rounds", []):
+                for c in rr.get("candidates", []):
+                    meta = load_json((self.dir / c["image"]).with_suffix(".json"), {})
+                    if meta.get("backend") in ("model-free",):
+                        continue
+                    gens.append(meta.get("seconds"))
+                    loads.append(meta.get("load_seconds") or 0)
+        gens = [g for g in gens if g is not None]
+        return {"model_load_seconds_total": round(sum(loads), 1), "generations": len(gens),
+                "first_generation_seconds": gens[0] if gens else None,
+                "later_generation_seconds_avg": round(sum(gens[1:]) / len(gens[1:]), 1) if len(gens) > 1 else None}
 
     def _safe_describe(self) -> dict[str, Any]:
         try:

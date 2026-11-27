@@ -92,6 +92,21 @@ def cmd_models_verify(a) -> int:
     return 0 if all(r["status"] == "OK" for r in rows) else 1
 
 
+def cmd_cache_key(a) -> int:
+    """必要モデルの SHA256 集合からキャッシュキーを作る（モデルが同じなら同じキー＝再ダウンロード不要）。"""
+    import hashlib
+    al = Allowlist.load()
+    shas = sorted(f["sha256"] for mid in (a.models or []) for f in al.require_model(mid).files)
+    key = "models-v2-" + hashlib.sha256("\n".join(shas).encode()).hexdigest()[:20] if shas else "models-v2-none"
+    total = sum(int(f.get("size_bytes") or 0) for mid in (a.models or []) for f in al.require_model(mid).files)
+    print(json.dumps({"key": key, "files": len(shas), "total_gb": round(total / 1024**3, 2)}))
+    gh_out = os.environ.get("GITHUB_OUTPUT")
+    if gh_out:
+        with open(gh_out, "a") as f:
+            f.write(f"key={key}\n")
+    return 0
+
+
 def cmd_ledger_sync(a) -> int:
     _print({"added": ledger.sync(Allowlist.load())})
     return 0
@@ -220,6 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("models-fetch"); s.add_argument("--only", nargs="*")
     s.add_argument("--report", default="model_fetch_report.json"); s.set_defaults(f=cmd_models_fetch)
     s = sub.add_parser("models-verify"); s.set_defaults(f=cmd_models_verify)
+    s = sub.add_parser("cache-key"); s.add_argument("--models", nargs="*"); s.set_defaults(f=cmd_cache_key)
     s = sub.add_parser("ledger-sync"); s.set_defaults(f=cmd_ledger_sync)
     s = sub.add_parser("scan"); s.add_argument("paths", nargs="+"); s.add_argument("--log"); s.set_defaults(f=cmd_scan)
     s = sub.add_parser("job-validate"); s.add_argument("job"); s.set_defaults(f=cmd_job_validate)

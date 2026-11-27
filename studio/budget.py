@@ -70,6 +70,10 @@ def lint_workflows(root: Path = REPO_ROOT) -> list[str]:
     for wf in sorted((root / ".github" / "workflows").glob("*.y*ml")):
         data = yaml.safe_load(wf.read_text(encoding="utf-8")) or {}
         for name, job in (data.get("jobs") or {}).items():
+            if "uses" in job:  # 再利用ワークフローの呼び出し（実体側で検査）
+                if not str(job["uses"]).startswith("./.github/workflows/"):
+                    problems.append(f"{wf.name}:{name}: 外部の再利用ワークフローは禁止")
+                continue
             ro = job.get("runs-on")
             labels = ro if isinstance(ro, list) else [ro]
             for l in labels:

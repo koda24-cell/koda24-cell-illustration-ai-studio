@@ -45,6 +45,9 @@ class ProceduralBackend:
         return {"backend": "procedural", "warning": "テスト専用。AIモデルは使用していません"}
 
     def run(self, op: str, params: dict[str, Any], inputs: dict[str, Image.Image]) -> Image.Image:
+        if params.get("sleep_seconds"):  # 長時間生成の模擬（引き継ぎ・再開の検証用）
+            import time
+            time.sleep(min(float(params["sleep_seconds"]), 600))
         gen = _pattern(params)
         if op == "txt2img":
             return gen

@@ -41,6 +41,45 @@
 - 6時間ジョブで生成できるのは目安として **txt2img 約8枚、または Inpaint 差分 約20枚**。複数候補×多ラウンドの自動改善は数ラウンドが上限。
 - 推奨運用: txt2img は 1〜2 候補に絞り、良い 1 枚を起点に Inpaint で差分・修正（読込1回で済むよう同一ジョブにまとめる）。
 
+## 2026-11-27 共通 Docker 実行基盤と高速化の実測（PR #13）
+共通イメージ `ghcr.io/koda24-cell/illustration-ai-studio-cpu@sha256:27e0eba5…`（Public, 約635MB, torch 2.15.0+cpu / diffusers 0.43.0 / transformers 5.24.1 / ClamAV 1.4.6）。
+
+### 基盤の検証
+| 項目 | 状態 | 証拠 |
+|---|---|---|
+| イメージのビルド・GHCR 公開・digest 固定、イメージ内で pytest/自己診断/ClamAV 更新/EICAR 隔離 | ✅ | [build-image #45905570703](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45905570703), [#45915667798](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45915667798)（`IMAGE_CLAMAV_GATE_OK`, `PUBLIC`） |
+| プッシュ起動（`jobs/queue/*.yaml` → studio-push → studio-run） | ✅ | [#45906498656](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45906498656) ほか |
+| 時間切れ → `produce` を resume 付きで自動起動 ×2 → 完了（引き継ぎ） | ✅ | [push #45914780671](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914780671) → [#45914987949](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45914987949) → [#45915196886](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45915196886)（handoff-test: sessions=3, 全ステージ done） |
+| キャッシュ復元後の SHA256 全量照合（6.94GB） | ✅ | 約10秒 |
+| 並行実行時の途中保存 push 競合 → rebase 再試行 | ✅（修正済み） | コンテナ内で git 識別情報が無く rebase 失敗していた → `checkpoint_push.sh` で設定 |
+
+### 速度比較（同一モデル Obsession v-pred・同一プロンプト・832×1216・20 steps・fp32・seed 20261127/20261128）
+| 計測項目 | A 旧方式（毎回 pip） | B Docker（同一設定） | C Docker＋高速設定 | D Docker（SDPAのみ） |
+|---|---|---|---|---|
+| 実行環境の準備（pip・ディスク・スワップ） | 164秒 | 2秒 | 2秒 | 2秒 |
+| Docker イメージの取得 | — | 17秒 | 20秒 | 22秒 |
+| モデルキャッシュの復元（6.94GB） | 83秒 | 45秒 | 50秒 | 51秒 |
+| 安全性検査（キャッシュ時: SHA256照合 / 旧方式は ClamAV 導入含む） | 19秒 | 5秒※ | 10秒 | 9秒 |
+| 実行開始までの合計 | **約270秒** | **約76秒** | **約90秒** | 約90秒 |
+| モデルのメモリ読込 | （未回収） | 43秒 | 59秒 | 66秒 |
+| 1枚目の生成 | （未回収） | 2293秒 | **2079秒** | 2263秒 |
+| 2枚目の生成（読込なし） | （未回収） | 2192秒 | **1996秒** | — |
+| 成果物の保存（最終 push） | 32秒（失敗） | 2秒 | 2秒 | — |
+| 制作セッション全体 | 4442秒 | 4546秒 | **4153秒** | — |
+| **ジョブ全体** | **4749秒** | **4627秒** | **4252秒（−10.5%）** | 2445秒（1枚） |
+| Actions | [#45905173128](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45905173128) | [#45906498656](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45906498656) | [#45906870731](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45906870731) | [#45913553402](https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45913553402) |
+
+※ B は旧仕様（キャッシュ内の検証済み印を信用）。以降は毎回全量照合（約10秒）。
+C の設定: `attention_slicing: false`（PyTorch SDPA）＋ `channels_last: true`。**画質設定は同一で、B と C の出力は1枚目が完全一致・2枚目もほぼ一致**（平均画素差 0.003/255）。
+
+### 分析
+- **Docker 化の効果は準備時間に限られる**: 実行開始までが約270秒 → 約80秒（約3分短縮）。最大の要因は毎回の pip install（生成ライブラリ）とディスク整理の省略。
+- **生成そのものは CPU 演算が律速**で、Docker 化だけでは速くならない（A と B のセッション時間の差 ±2% は測定誤差の範囲）。1枚約37分のうち準備は数％。
+- **生成の高速化は channels_last が主因**: SDPA のみ（D）は B とほぼ同じ（−1%）、SDPA＋channels_last（C）は 1枚あたり約9%短縮。→ 2026-11-27 以降の既定値に採用（画質は変えない）。
+- 旧方式の A は、並行実行中の push 競合で最終保存に失敗（旧 `checkpoint_push.sh` の rebase がコミッタ不明で失敗）。画像・ログは Actions の成果物に残っており、`recover-artifact` で studio-runs へ復元可能。この不具合は PR #13 で修正済み。
+- モデルキャッシュ復元（約45〜50秒）は actions/cache の展開速度で律速。モデルをイメージに含めれば短縮できるが、許可リスト管理と分離の方針・GHCR 容量の観点から採用しない。
+- 同一ジョブ内では、モデルは1回だけ読み込み、生成・Inpaint・img2img・Outpaint で同じ重みを再利用する（feature-check で 1回 64秒の読込のみ）。
+
 ## 既知の制約
 - 背景透過はモデル不要の単色背景キー方式（実イラストで輪郭に薄い白縁、接地影は残ることを確認）。複雑な背景や髪と背景が同色の場合は不正確（許可済みセグメンテーションモデルの指定があれば拡張可能）。
 - 自動評価は統計的な代理指標。手指・人体の破綻や絵柄の意味的な近さは判定できない。

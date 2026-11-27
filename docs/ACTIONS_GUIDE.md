@@ -14,12 +14,31 @@
 ## ワークフロー一覧
 | 名前 | きっかけ | 内容 |
 |---|---|---|
+| `studio-push` | `jobs/queue/*.yaml` の push（全ブランチ） | 追加/更新された制作指示を共通イメージで実行 |
+| `studio-run` | （再利用ワークフロー） | 実行の本体。produce / studio-push から呼ばれる |
+| `build-image` | Dockerfile・固定版の変更 / 手動 | 共通イメージを GHCR に公開し digest を出力、イメージ内で自己診断 |
+| `produce-native` | 手動 | 旧方式（毎回 pip 構築）。互換・比較用 |
 | `ci` | PR / main push | 単体テスト、許可リスト検査、無料ランナー静的検査、自己診断ラン、サイト生成、ClamAV ゲート検証（EICAR） |
 | `register-model` | 手動 | Civitai URL から許可リスト下書き → ブランチ / PR（モデル本体は取得しない） |
 | `fetch-models` | 手動 / models.yaml 更新 | 許可モデルのみ取得 → ClamAV → SHA256 → actions/cache |
-| `produce` | 手動 | 制作ジョブ実行（最大 345 分）、途中保存・再開 |
+| `produce` | 手動 | 制作ジョブ実行（共通イメージ、1ジョブ最大 345 分）、途中保存・再開・自動引き継ぎ |
 | `site` | main push / produce 完了 / 手動 | 制作確認サイトを Pages に公開 |
-| `docker` | Dockerfile 変更 PR / 手動 | CPU コンテナのビルドと自己診断 |
+
+## プッシュで制作を始める（おすすめ）
+```bash
+cp jobs/templates/character_standing.yaml jobs/queue/my-hero.yaml   # 編集して
+git add jobs/queue/my-hero.yaml && git commit -m "制作: 主人公立ち絵" && git push
+```
+→ `studio-push` が起動。結果は studio-runs と制作確認サイトへ。
+
+## 実行の流れ（studio-run）
+1. `config/runtime.yaml` の digest 固定イメージを GHCR から取得（約20秒）
+2. 無料枠ガード → studio-runs 取得 → 制作指示を許可リストと照合
+3. スワップ追加（SDXL のメモリ対策）→ モデルキャッシュ復元（必要モデルの SHA256 集合がキー）
+4. SHA256 全量照合。未取得のモデルだけ ClamAV 更新 → 取得 → 検査 → 照合 → キャッシュ保存
+5. 制作セッション（候補生成・評価・改善・途中保存）
+6. 計時（`timings-<run>.json`）を保存して studio-runs へ push、サイト更新
+7. 時間切れなら `produce` を `resume_run_id` 付きで自動起動（`max_chain` 回まで）
 
 ## produce の実行
 Actions → **produce** → Run workflow
@@ -27,7 +46,7 @@ Actions → **produce** → Run workflow
 - `time_budget`: 分（最大 345。セットアップ時間を含めて 6 時間以内に収まるよう制限）
 - `resume_run_id`: 中断した run を再開するときに指定（新規なら空）
 
-実行中は 15 分ごとに `studio-runs` ブランチへ途中保存されます。タイムアウトや失敗でも保存済み分は残り、
+実行中は候補・ラウンド・工程ごとに `studio-runs` ブランチへ途中保存されます（候補ごとは5分間隔まで）。タイムアウトや失敗でも保存済み分は残り、
 `resume_run_id` で続きから再開できます。結果はジョブの Summary、成果物（Artifacts）、制作確認サイトで確認。
 
 ## ローカル / 他環境での実行（任意）
