@@ -55,12 +55,90 @@
   "stages": {
     "urban-action": {
       "status": "pending",
-      "rounds": [],
+      "rounds": [
+        {
+          "round": 0,
+          "params": {
+            "width": 832,
+            "height": 1216,
+            "steps": 20,
+            "cfg": 4.5,
+            "scheduler": "euler",
+            "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+            "denoise": 0.5,
+            "model": "obsession-illustrious-xl-v-pred-v1-1",
+            "pipeline_config": "sdxl-base-1-0-config",
+            "prediction_type": "v_prediction",
+            "zero_terminal_snr": true,
+            "guidance_rescale": 0.7,
+            "dtype": "float32",
+            "seed": 20261127,
+            "attention_slicing": false,
+            "channels_last": true,
+            "prompt": "very awa, 1girl, solo, full body, short teal hair, white coat, black tactical vest, shorts, floating, reaching towards viewer, from below, foreshortening, ruined city, skyscrapers, floating debris, backlighting, wind, sushispin, aspara, reoen, kamo kamen, cinematic, masterpiece, best quality, newest"
+          },
+          "candidates": [
+            {
+              "image": "stages/urban-action/r00_c0.png",
+              "score": 1.0,
+              "seconds": 1227.5583634376526
+            }
+          ],
+          "best": "stages/urban-action/r00_c0.png",
+          "best_score": 1.0,
+          "next_changes": []
+        }
+      ],
       "private_inputs": [],
       "name": "urban-action",
       "base_seed": 20261127,
       "sec_per_candidate": 1227.5583634376526,
-      "n_done": 1
+      "n_done": 1,
+      "best": {
+        "image": "stages/urban-action/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+          "denoise": 0.5,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261127,
+          "attention_slicing": false,
+          "channels_last": true,
+          "prompt": "very awa, 1girl, solo, full body, short teal hair, white coat, black tactical vest, shorts, floating, reaching towards viewer, from below, foreshortening, ruined city, skyscrapers, floating debris, backlighting, wind, sushispin, aspara, reoen, kamo kamen, cinematic, masterpiece, best quality, newest"
+        }
+      },
+      "no_improve": 0,
+      "first_best": "stages/urban-action/r00_c0.png",
+      "next_params": {
+        "width": 832,
+        "height": 1216,
+        "steps": 20,
+        "cfg": 4.5,
+        "scheduler": "euler",
+        "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+        "denoise": 0.5,
+        "model": "obsession-illustrious-xl-v-pred-v1-1",
+        "pipeline_config": "sdxl-base-1-0-config",
+        "prediction_type": "v_prediction",
+        "zero_terminal_snr": true,
+        "guidance_rescale": 0.7,
+        "dtype": "float32",
+        "seed": 20261127,
+        "attention_slicing": false,
+        "channels_last": true,
+        "prompt": "very awa, 1girl, solo, full body, short teal hair, white coat, black tactical vest, shorts, floating, reaching towards viewer, from below, foreshortening, ruined city, skyscrapers, floating debris, backlighting, wind, sushispin, aspara, reoen, kamo kamen, cinematic, masterpiece, best quality, newest"
+      }
     }
   },
   "errors_recovered": 0,
@@ -73,5 +151,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 21.61
+  "elapsed_total_min": 21.65
 }
