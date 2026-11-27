@@ -97,7 +97,7 @@ async def batch(binary, job, inputs, output):
             "--automation-read-root", str(inputs),
             "--automation-read-root", str(output),
             "--automation-write-root", str(output),
-            cwd=inputs, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+            cwd=output, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
             stderr=stderr, limit=16 * 1024 * 1024,
         )
         client = Mcp(server)

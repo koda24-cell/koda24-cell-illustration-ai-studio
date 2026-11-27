@@ -62,6 +62,9 @@ jobs:
             -v "$PWD:/work:ro" -v "$PWD/artcraft-results:/results" \
             "$STUDIO_IMAGE" python -m studio.artcraft run "/work/$binary" \
             "jobs/artcraft/$ENGINE.json" artcraft-inputs /results/output
+      - name: Show verification
+        if: success()
+        run: cat artcraft-results/output/verification.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
