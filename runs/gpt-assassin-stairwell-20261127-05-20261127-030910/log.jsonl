@@ -4,3 +4,4 @@
 {"t": "2026-11-27T03:32:37+00:00", "event": "round_done", "stage": "stairwell", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 3166, "swap_free_mb": 7181, "vmhwm_mb": 15114, "vmrss_mb": 11549}
 {"t": "2026-11-27T03:32:38+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.73, "stderr": ""}
 {"t": "2026-11-27T03:32:38+00:00", "event": "stage_done", "stage": "stairwell", "mem_available_mb": 3209, "swap_free_mb": 7181, "vmhwm_mb": 15114, "vmrss_mb": 11549}
+{"t": "2026-11-27T03:32:40+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.08, "stderr": ""}
