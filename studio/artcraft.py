@@ -165,6 +165,11 @@ def run(binary, job_path, inputs, output, resume=False):
         if Path(name).name != name or name in {"", ".", ".."}:
             raise ValueError("Expected outputs must be plain filenames")
     output.mkdir(exist_ok=resume)
+    identity = output / "job.sha256"
+    fingerprint = sha256_file(job_path)
+    if resume and identity.exists() and identity.read_text().strip() != fingerprint:
+        raise ValueError("Checkpoint belongs to a different job definition")
+    identity.write_text(fingerprint + "\n")
     if job.get("fixture") == "blue-square" and not (output / "before.png").exists():
         Image.new("RGBA", (64, 48), "#204e86").save(output / "before.png")
     source = None

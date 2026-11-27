@@ -1,15 +1,25 @@
 name: ArtCraft CPU
 on:
   push:
-    branches: [gpt/artcraft-adaptive, main]
+    branches: [gpt/artcraft-resume, main]
     paths:
       - .github/workflows/artcraft.yml
       - studio/artcraft.py
       - studio/artcraft_handoff.py
+      - studio/artcraft_resume.py
       - studio/artcraft_quality.py
       - config/artcraft.json
       - jobs/artcraft/**
   workflow_dispatch:
+    inputs:
+      resume_run_id:
+        description: "再開元の ArtCraft CPU Actions 実行 ID（任意）"
+        type: string
+      engine:
+        description: "再開するエンジン"
+        type: choice
+        options: [photocraft, vectorcraft]
+        default: photocraft
   workflow_run:
     workflows: [studio-push, produce]
     types: [completed]
@@ -26,10 +36,11 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: read
     strategy:
       fail-fast: false
       matrix:
-        engine: ${{ fromJSON(github.event_name == 'workflow_run' && '["photocraft"]' || '["photocraft","vectorcraft"]') }}
+        engine: ${{ fromJSON(inputs.resume_run_id != '' && format('[{0}{1}{0}]', '"', inputs.engine) || github.event_name == 'workflow_run' && '["photocraft"]' || '["photocraft","vectorcraft"]') }}
     env:
       ENGINE: ${{ matrix.engine }}
       ARTCRAFT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -99,6 +110,25 @@ jobs:
           echo "ARTCRAFT_IMAGE=$runtime" >> "$GITHUB_ENV"
           echo "ArtCraft runtime: $runtime" >> "$GITHUB_STEP_SUMMARY"
           docker run --rm --network none "$runtime" cat /opt/artcraft/evidence/scans.json > artcraft-evidence/scans.json
+      - name: Restore checkpoint from earlier runner
+        if: steps.runtime.outputs.image != '' && inputs.resume_run_id != ''
+        env:
+          RESUME_RUN_ID: ${{ inputs.resume_run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [[ "$RESUME_RUN_ID" =~ ^[0-9]+$ ]]
+          metadata=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RESUME_RUN_ID")
+          jq -e '.path == ".github/workflows/artcraft.yml" and .head_branch == "main" and .status == "completed" and .event != "workflow_run"' <<< "$metadata"
+          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RESUME_RUN_ID/artifacts" \
+            | jq -er --arg name "artcraft-$ENGINE" '[.artifacts[] | select(.name == $name and .expired == false)] | max_by(.id) | .id')
+          mkdir -p artcraft-results
+          archive=$(mktemp)
+          trap 'rm -f "$archive"' EXIT
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > "$archive"
+          docker run --rm -v "$PWD:/work:ro" -v "$archive:/checkpoint.zip:ro" \
+            -v "$PWD/artcraft-results:/results" "$STUDIO_IMAGE" sh -ec 'freshclam --stdout &&
+              python -m studio.artcraft_resume /checkpoint.zip "jobs/artcraft/$1.json" /results/output' sh "$ENGINE"
+          sudo chown -R "$(id -u):$(id -g)" artcraft-results
       - name: Execute MCP batch offline
         if: steps.runtime.outputs.image != ''
         env:
@@ -108,6 +138,7 @@ jobs:
           job="jobs/artcraft/$ENGINE.json"
           if [ "$ARTCRAFT_EVENT" = workflow_run ]; then job=jobs/artcraft/handoff.json; fi
           resume=()
+          if [ -f artcraft-results/output/quality.json ]; then resume=(--resume); fi
           for attempt in 0 1 2 3; do
             status=0
             docker run --rm --init --network none --read-only --cap-drop ALL \
@@ -173,6 +204,7 @@ jobs:
             artcraft-results/
             artcraft-evidence/
           retention-days: 2
+          overwrite: true
 
   save-review:
     needs: edit
@@ -206,3 +238,51 @@ jobs:
               "runs-branch/runs/$rid" "$rid"
           done
           STUDIO_RUNS_REPO="$PWD/runs-branch" bash scripts/checkpoint_push.sh "artcraft-$GITHUB_RUN_ID"
+
+  verify-resume:
+    needs: edit
+    if: github.ref == 'refs/heads/gpt/artcraft-resume'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ARTCRAFT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Resume PhotoCraft on a separate runner
+        run: |
+          image=$(awk '/^image:/{print $2}' config/runtime.yaml)
+          key=$(sha256sum config/artcraft.json config/runtime.yaml studio/scan.py | sha256sum | cut -c1-20)
+          tag="$image:artcraft-photocraft-$key"
+          docker pull "$tag"
+          runtime=$(docker image inspect "$tag" --format '{{index .RepoDigests 0}}')
+          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+            | jq -er '.artifacts[] | select(.name == "artcraft-photocraft" and .expired == false) | .id')
+          archive=$(mktemp)
+          trap 'rm -f "$archive"' EXIT
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > "$archive"
+          mkdir resumed artcraft-resume-inputs
+          docker run --rm -v "$PWD:/work:ro" -v "$archive:/checkpoint.zip:ro" \
+            -v "$PWD/resumed:/results" "$runtime" sh -ec 'freshclam --stdout &&
+              python -m studio.artcraft_resume /checkpoint.zip jobs/artcraft/photocraft.json /results/output'
+          sudo chown -R "$(id -u):$(id -g)" resumed
+          # Exercise continuation from the first accepted iteration of the real run.
+          first=$(jq -ce '.history[0] | select(.accepted == true and .preview == "preview-01.png")' resumed/output/quality.json)
+          test -n "$first"
+          jq '.history |= .[:1] | .best_preview="preview-01.png" | .best_native="checkpoint-01.pcraft" | del(.stop)' \
+            resumed/output/quality.json > resumed/partial.json
+          mv resumed/partial.json resumed/output/quality.json
+          docker run --rm --init --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+            --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
+            -v "$PWD:/work:ro" -v "$PWD/resumed:/results" "$runtime" sh -ec '
+              binary=$(find /opt/artcraft/photocraft -type f -path "*/bin/photocraft-cli" -print)
+              exec python -m studio.artcraft run "$binary" jobs/artcraft/photocraft.json artcraft-resume-inputs /results/output --resume'
+          jq -e '.quality.history | length == 3' resumed/output/verification.json
+          jq -e '.[0].operation.arguments.path == "checkpoint-01.pcraft" and
+                 ([.[] | select(.operation.name == "command_run")] | length) == 2' resumed/output/operations.json
