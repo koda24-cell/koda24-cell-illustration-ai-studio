@@ -262,6 +262,29 @@
       "first_best": "stages/expression_surprised/r00_c0.png",
       "comparison": "comparisons/expression_surprised_latest.png",
       "stop_reason": "max_rounds"
+    },
+    "cutout": {
+      "status": "done",
+      "rounds": [
+        {
+          "round": 0,
+          "candidates": [
+            {
+              "image": "stages/cutout/r00_c0.png",
+              "score": 1.0
+            }
+          ],
+          "best": "stages/cutout/r00_c0.png"
+        }
+      ],
+      "private_inputs": [],
+      "stop_reason": "single_pass",
+      "name": "cutout",
+      "best": {
+        "image": "stages/cutout/r00_c0.png",
+        "score": 1.0,
+        "round": 0
+      }
     }
   },
   "errors_recovered": 0,
@@ -274,5 +297,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 91.44
+  "elapsed_total_min": 91.48
 }
