@@ -20,6 +20,7 @@ class VisionReviewer:
         import torch
         from transformers import AutoModelForImageTextToText, AutoProcessor
 
+        started = time.monotonic()
         if not MODEL_DIR.is_dir():
             raise ValueError("The allowlisted ArtCraft visual model has not been staged")
         self.torch = torch
@@ -31,6 +32,7 @@ class VisionReviewer:
             MODEL_DIR, local_files_only=True, trust_remote_code=False,
             use_safetensors=True, dtype=torch.float32,
         ).eval()
+        self.load_seconds = round(time.monotonic() - started, 2)
 
     def choose(self, paths, prompt, options):
         started = time.monotonic()
@@ -50,7 +52,8 @@ class VisionReviewer:
             *[{"type": "image"} for _ in images], {"type": "text", "text": text},
         ]}]
         template = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=template, images=images, return_tensors="pt")
+        inputs = self.processor(text=template, images=images, return_tensors="pt",
+                                do_image_splitting=False, size={"longest_edge": 512})
         with self.torch.inference_mode():
             logits = self.model(**inputs, use_cache=False).logits[0, -1]
         scores = []

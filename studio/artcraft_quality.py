@@ -116,6 +116,8 @@ async def improve(call, engine, goal, output, *, resume=False):
             result["stroke"] = abs(measured["object"]["strokeWidth"] - goal["stroke"]["width"])
         return result
 
+    if reviewer is not None:
+        report["vision_model_load_seconds"] = reviewer.load_seconds
     before = await assess(report["best_preview"])
     save_report()
     blocked = {entry["issue"] for entry in report["history"] if not entry["accepted"]}
