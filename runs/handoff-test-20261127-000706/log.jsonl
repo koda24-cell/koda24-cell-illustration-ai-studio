@@ -1,2 +1,5 @@
 {"t": "2026-11-27T00:07:06+00:00", "event": "session_start", "resumed": false, "remaining_min": 1.5}
 {"t": "2026-11-27T00:07:06+00:00", "event": "candidate_start", "stage": "s1", "round": 0, "candidate": 0, "mem_available_mb": 14780, "swap_free_mb": 3071, "vmhwm_mb": 47, "vmrss_mb": 47}
+{"t": "2026-11-27T00:07:47+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.06, "stderr": ""}
+{"t": "2026-11-27T00:07:47+00:00", "event": "candidate_start", "stage": "s1", "round": 0, "candidate": 1, "mem_available_mb": 14940, "swap_free_mb": 3071, "vmhwm_mb": 77, "vmrss_mb": 75}
+{"t": "2026-11-27T00:08:27+00:00", "event": "round_done", "stage": "s1", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 14943, "swap_free_mb": 3071, "vmhwm_mb": 77, "vmrss_mb": 76}
