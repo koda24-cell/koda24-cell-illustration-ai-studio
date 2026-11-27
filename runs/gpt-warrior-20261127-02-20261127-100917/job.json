@@ -1,0 +1,55 @@
+{
+  "job_id": "gpt-warrior-20261127-02",
+  "title": "戦士・回転する格闘ポーズ",
+  "backend": "diffusers",
+  "time_budget_minutes": 100.0,
+  "publish": true,
+  "assign_to": {
+    "project": "kotama-no-bouken",
+    "targets": [
+      "warrior_illustration_candidate"
+    ]
+  },
+  "limits": {
+    "max_rounds": 1,
+    "candidates_per_round": 1,
+    "patience": 1,
+    "target_score": 1.5,
+    "max_error_retries": 1
+  },
+  "defaults": {
+    "width": 832,
+    "height": 1216,
+    "steps": 20,
+    "cfg": 4.5,
+    "scheduler": "euler",
+    "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+    "denoise": 0.5,
+    "model": "obsession-illustrious-xl-v-pred-v1-1",
+    "pipeline_config": "sdxl-base-1-0-config",
+    "prediction_type": "v_prediction",
+    "zero_terminal_snr": true,
+    "guidance_rescale": 0.7,
+    "dtype": "float32",
+    "seed": 2026112792,
+    "attention_slicing": false,
+    "channels_last": true
+  },
+  "evaluation": {
+    "metrics": [
+      "composition",
+      "artifacts"
+    ]
+  },
+  "improve": {
+    "enabled": false
+  },
+  "stages": [
+    {
+      "name": "warrior",
+      "op": "txt2img",
+      "prompt": "very awa, 1girl, adult woman, solo, dutch angle, midair spinning kick, bent knees, raised fist, dynamic pose, short dark hair, teal braids, red gold martial arts outfit, loose trousers, flowing sash, gold bracelets, stone courtyard, sunlight, masterpiece, best quality, newest",
+      "model": "obsession-illustrious-xl-v-pred-v1-1"
+    }
+  ]
+}
