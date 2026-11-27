@@ -1,0 +1,19 @@
+name: ArtCraft manual resume smoke
+on:
+  push:
+    branches: [gpt/artcraft-handoff-smoke]
+    paths: [.github/workflows/artcraft-resume-smoke.yml]
+permissions:
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Replay the verified public PhotoCraft fixture via workflow dispatch
+        run: |
+          gh run watch 46039611193 --repo "$GITHUB_REPOSITORY" --exit-status --interval 10
+          gh workflow run artcraft.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f resume_run_id=46039611193 -f engine=photocraft
