@@ -4,7 +4,11 @@
   "expected": [
     "after.png",
     "reopened.png",
-    "editable.pcraft"
+    "editable.pcraft",
+    "format.psd",
+    "format.psb",
+    "format-psd.png",
+    "format-psb.png"
   ],
   "operations": [
     {
@@ -98,7 +102,65 @@
       "arguments": {
         "path": "reopened.png"
       }
+    },
+    {
+      "name": "doc_open",
+      "arguments": {
+        "path": "editable.pcraft"
+      }
+    },
+    {
+      "name": "doc_save",
+      "arguments": {
+        "path": "format.psd"
+      }
+    },
+    {
+      "name": "doc_open",
+      "arguments": {
+        "path": "format.psd"
+      }
+    },
+    {
+      "name": "doc_export",
+      "arguments": {
+        "path": "format-psd.png"
+      }
+    },
+    {
+      "name": "doc_open",
+      "arguments": {
+        "path": "editable.pcraft"
+      }
+    },
+    {
+      "name": "doc_save",
+      "arguments": {
+        "path": "format.psb"
+      }
+    },
+    {
+      "name": "doc_open",
+      "arguments": {
+        "path": "format.psb"
+      }
+    },
+    {
+      "name": "doc_export",
+      "arguments": {
+        "path": "format-psb.png"
+      }
     }
   ],
-  "fixture": "blue-square"
+  "fixture": "blue-square",
+  "quality_before": 8,
+  "quality_goal": {
+    "rgb": "#5ae09d",
+    "sample": [
+      28,
+      20,
+      36,
+      28
+    ]
+  }
 }

@@ -5,7 +5,9 @@
     "after.svg",
     "after.png",
     "reopened.png",
-    "editable.vectorcraft"
+    "editable.vectorcraft",
+    "format.pdf",
+    "format-pdf.png"
   ],
   "operations": [
     {
@@ -76,7 +78,8 @@
       "arguments": {
         "d": "M 18 56 C 25 19 72 19 79 56 C 65 81 31 81 18 56 Z",
         "fill": "#f45928",
-        "stroke": "none"
+        "stroke": "none",
+        "name": "Accent"
       }
     },
     {
@@ -116,6 +119,53 @@
       "arguments": {
         "path": "reopened.png"
       }
+    },
+    {
+      "name": "open_file",
+      "arguments": {
+        "path": "editable.vectorcraft"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "format.pdf"
+      }
+    },
+    {
+      "name": "open_file",
+      "arguments": {
+        "path": "format.pdf"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "format-pdf.png"
+      }
     }
-  ]
+  ],
+  "quality_before": 8,
+  "quality_goal": {
+    "rgb": "#42cad8",
+    "sample": [
+      45,
+      46,
+      52,
+      53
+    ],
+    "position": [
+      23,
+      31
+    ],
+    "object": "Accent",
+    "protected": [
+      [
+        0,
+        0,
+        8,
+        8
+      ]
+    ]
+  }
 }

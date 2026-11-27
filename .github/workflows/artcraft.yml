@@ -1,10 +1,11 @@
 name: ArtCraft CPU
 on:
   push:
-    branches: [gpt/artcraft-photo-vector-bootstrap, main]
+    branches: [gpt/artcraft-adaptive, main]
     paths:
       - .github/workflows/artcraft.yml
       - studio/artcraft.py
+      - studio/artcraft_quality.py
       - config/artcraft.json
       - jobs/artcraft/**
   workflow_dispatch:
