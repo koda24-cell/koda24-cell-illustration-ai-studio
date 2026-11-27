@@ -266,7 +266,7 @@ jobs:
           archive=$(mktemp)
           trap 'rm -f "$archive"' EXIT
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > "$archive"
-          mkdir resumed inputs
+          mkdir resumed artcraft-resume-inputs
           docker run --rm -v "$PWD:/work:ro" -v "$archive:/checkpoint.zip:ro" \
             -v "$PWD/resumed:/results" "$runtime" sh -ec 'freshclam --stdout &&
               python -m studio.artcraft_resume /checkpoint.zip jobs/artcraft/photocraft.json /results/output'
@@ -276,6 +276,6 @@ jobs:
             --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
             -v "$PWD:/work:ro" -v "$PWD/resumed:/results" "$runtime" sh -ec '
               binary=$(find /opt/artcraft/photocraft -type f -path "*/bin/photocraft-cli" -print)
-              exec python -m studio.artcraft run "$binary" jobs/artcraft/photocraft.json inputs /results/output --resume'
+              exec python -m studio.artcraft run "$binary" jobs/artcraft/photocraft.json artcraft-resume-inputs /results/output --resume'
           jq -e '.quality.history | length == 3' resumed/output/verification.json
           jq -e '. | any(.operation.name == "doc_open" and (.operation.arguments.path | startswith("checkpoint-")))' resumed/output/operations.json
