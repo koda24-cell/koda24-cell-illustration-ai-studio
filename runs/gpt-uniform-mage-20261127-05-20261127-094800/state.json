@@ -59,7 +59,7 @@
   "status": "running",
   "stages": {
     "mage": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -125,25 +125,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/mage/r00_c0.png",
-      "next_params": {
-        "width": 832,
-        "height": 1216,
-        "steps": 20,
-        "cfg": 4.5,
-        "scheduler": "euler",
-        "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
-        "denoise": 0.5,
-        "model": "obsession-illustrious-xl-v-pred-v1-1",
-        "pipeline_config": "sdxl-base-1-0-config",
-        "prediction_type": "v_prediction",
-        "zero_terminal_snr": true,
-        "guidance_rescale": 0.7,
-        "dtype": "float32",
-        "seed": 2026112785,
-        "attention_slicing": false,
-        "channels_last": true,
-        "prompt": "very awa, 1girl, solo, dutch angle, midair, twisting body, bent knees, staff across body, extreme foreshortening, floating debris, ice crystals, diagonal composition, cinematic bloom, adult woman, dark blue bob hair, amber eyes, navy blazer, white shirt, red ribbon, pleated skirt, dark tights, magic staff, anime coloring, masterpiece, best quality, newest"
-      }
+      "stop_reason": "single_pass"
     }
   },
   "errors_recovered": 0,
@@ -156,5 +138,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 21.58
+  "elapsed_total_min": 21.61
 }

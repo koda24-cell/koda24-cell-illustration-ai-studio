@@ -2,3 +2,5 @@
 {"t": "2026-11-27T09:48:01+00:00", "event": "candidate_start", "stage": "mage", "round": 0, "candidate": 0, "mem_available_mb": 14736, "swap_free_mb": 15359, "vmhwm_mb": 232, "vmrss_mb": 232}
 {"t": "2026-11-27T10:09:34+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 2.12, "stderr": ""}
 {"t": "2026-11-27T10:09:35+00:00", "event": "round_done", "stage": "mage", "round": 0, "best_score": 1.0, "improved": true, "changes": [], "mem_available_mb": 3437, "swap_free_mb": 9479, "vmhwm_mb": 14994, "vmrss_mb": 11358}
+{"t": "2026-11-27T10:09:37+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.73, "stderr": ""}
+{"t": "2026-11-27T10:09:37+00:00", "event": "stage_done", "stage": "mage", "mem_available_mb": 3444, "swap_free_mb": 9479, "vmhwm_mb": 14994, "vmrss_mb": 11358}
