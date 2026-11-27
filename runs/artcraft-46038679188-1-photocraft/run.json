@@ -1,0 +1,15 @@
+{
+  "run_id": "artcraft-46038679188-1-photocraft",
+  "job_id": "photocraft",
+  "title": "ArtCraft · photocraft-cli 0.23.1 (45066c482, 2026-11-12)",
+  "status": "done",
+  "backend": "photocraft",
+  "runtime": "Docker / MCP",
+  "publish": true,
+  "created_at": "2026-11-27T17:04:09+00:00",
+  "finished_at": "2026-11-27T17:04:09+00:00",
+  "elapsed_min": 0.001,
+  "actions_runs": [
+    "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46038679188"
+  ]
+}

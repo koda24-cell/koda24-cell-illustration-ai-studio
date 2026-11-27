@@ -1,0 +1,144 @@
+{
+  "version": "vectorcraft-cli 0.24.1",
+  "mcp": {
+    "capabilities": {
+      "completions": {},
+      "logging": {},
+      "prompts": {
+        "listChanged": false
+      },
+      "resources": {},
+      "tools": {}
+    },
+    "instructions": "VectorCraft is a professional vector illustration app. Coordinates are points in document space (y down, origin at the first artboard's top-left; a new document is 612×792). Draw with draw_shape / draw_path, change colours with set_paint, look with render_preview and doc_inspect. Every menu action is a command: find it with command_list and run it with command_run (or command_batch for several). New objects become the selection, and most commands act on the selection (or on explicit `ids`). prompts/list has ready-made workflows, completion/complete finishes a command id, a format, an effect or a swatch name, and vectorcraft://object/{id}, vectorcraft://command/{id}, vectorcraft://effect/{id} and vectorcraft://swatch/{name} read one thing at a time instead of the whole document. Backend: headless.",
+    "protocolVersion": "2025-06-18",
+    "serverInfo": {
+      "name": "vectorcraft",
+      "title": "VectorCraft",
+      "version": "0.24.1"
+    }
+  },
+  "seconds": 0.05,
+  "quality": {
+    "goal": {
+      "rgb": "#42cad8",
+      "sample": [
+        45,
+        46,
+        52,
+        53
+      ],
+      "position": [
+        23,
+        31
+      ],
+      "object": "Accent",
+      "protected": [
+        [
+          0,
+          0,
+          8,
+          8
+        ]
+      ]
+    },
+    "history": [
+      {
+        "issue": "color",
+        "before": {
+          "color": 155.66666666666666,
+          "position": 3.875
+        },
+        "after": {
+          "color": 0.0,
+          "position": 3.875
+        },
+        "protected": true,
+        "tool": "set_paint",
+        "arguments": {
+          "ids": [
+            5
+          ],
+          "fill": "#42cad8"
+        },
+        "preview": "preview-01.png",
+        "accepted": true
+      },
+      {
+        "issue": "position",
+        "before": {
+          "color": 0.0,
+          "position": 3.875
+        },
+        "after": {
+          "color": 0.0,
+          "position": 0.0
+        },
+        "protected": true,
+        "tool": "run_command",
+        "arguments": {
+          "command": "object.move",
+          "params": {
+            "ids": [
+              5
+            ],
+            "dx": 5.0,
+            "dy": 2.75
+          }
+        },
+        "preview": "preview-02.png",
+        "accepted": true
+      }
+    ],
+    "best_preview": "preview-02.png",
+    "best_native": "checkpoint-02.vectorcraft",
+    "stop": "target_met"
+  },
+  "engine": "vectorcraft",
+  "outputs": {
+    "after.svg": {
+      "sha256": "6fb07619198e14c5a094b04c063a2c3df6b75abf32baa0b4c299f449c7ae1182",
+      "bytes": 881
+    },
+    "after.png": {
+      "sha256": "042229d2dabe780dfb256bde0252af7dc7fdd6ec9caba37d27990beaa5381dd2",
+      "bytes": 2442,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    },
+    "reopened.png": {
+      "sha256": "042229d2dabe780dfb256bde0252af7dc7fdd6ec9caba37d27990beaa5381dd2",
+      "bytes": 2442,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    },
+    "editable.vectorcraft": {
+      "sha256": "978adf77a19d2ef4aa72b182e2fb48fea2b5564fb9b6eafeb5576aaf0cb569e0",
+      "bytes": 33368
+    },
+    "format.pdf": {
+      "sha256": "315e5ece126f7f24c5877976604c7e9e51476f4fb5f56686c573c670d8c50f00",
+      "bytes": 5022
+    },
+    "format-pdf.png": {
+      "sha256": "e7c1b51ef03dc2a182b735aaa29e606067be357b06c1046bba3f6e685f8491ab",
+      "bytes": 2444,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    }
+  },
+  "source": null,
+  "native_roundtrip": true,
+  "actions_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46038679188",
+  "approval": "pending",
+  "editable": "editable.vectorcraft"
+}
