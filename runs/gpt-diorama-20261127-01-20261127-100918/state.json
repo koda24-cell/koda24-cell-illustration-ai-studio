@@ -59,7 +59,7 @@
   "status": "running",
   "stages": {
     "diorama": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -125,25 +125,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/diorama/r00_c0.png",
-      "next_params": {
-        "width": 1216,
-        "height": 832,
-        "steps": 20,
-        "cfg": 4.5,
-        "scheduler": "euler",
-        "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
-        "denoise": 0.5,
-        "model": "obsession-illustrious-xl-v-pred-v1-1",
-        "pipeline_config": "sdxl-base-1-0-config",
-        "prediction_type": "v_prediction",
-        "zero_terminal_snr": true,
-        "guidance_rescale": 0.7,
-        "dtype": "float32",
-        "seed": 2026112793,
-        "attention_slicing": false,
-        "channels_last": true,
-        "prompt": "very awa, isometric miniature diorama, mobile game environment, fantasy town, cutaway terrain, adventurer guild, small shops, fountain plaza, timber houses, stone paths, tiny adventurers, lush trees, colorful banners, soft sunlight, detailed anime background, masterpiece, best quality, newest"
-      }
+      "stop_reason": "single_pass"
     }
   },
   "errors_recovered": 0,
@@ -156,5 +138,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 34.63
+  "elapsed_total_min": 34.76
 }
