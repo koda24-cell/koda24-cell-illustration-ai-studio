@@ -1,0 +1,82 @@
+{
+  "run_id": "gpt-assassin-stairwell-20261127-04-20261127-030935",
+  "job": {
+    "job_id": "gpt-assassin-stairwell-20261127-04",
+    "title": "アサシン・青い階段 04 引きの構図・階段全体",
+    "backend": "diffusers",
+    "time_budget_minutes": 100.0,
+    "publish": true,
+    "assign_to": {
+      "project": "kotama-no-bouken",
+      "targets": [
+        "assassin_stairwell_still"
+      ]
+    },
+    "limits": {
+      "max_rounds": 1,
+      "candidates_per_round": 1,
+      "patience": 1,
+      "target_score": 1.5,
+      "max_error_retries": 1
+    },
+    "defaults": {
+      "width": 832,
+      "height": 1216,
+      "steps": 20,
+      "cfg": 4.5,
+      "scheduler": "euler",
+      "negative_prompt": "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished",
+      "denoise": 0.5,
+      "model": "obsession-illustrious-xl-v-pred-v1-1",
+      "pipeline_config": "sdxl-base-1-0-config",
+      "prediction_type": "v_prediction",
+      "zero_terminal_snr": true,
+      "guidance_rescale": 0.7,
+      "dtype": "float32",
+      "seed": 2026112704,
+      "attention_slicing": false,
+      "channels_last": true
+    },
+    "evaluation": {
+      "metrics": [
+        "composition",
+        "artifacts"
+      ]
+    },
+    "improve": {
+      "enabled": false
+    },
+    "stages": [
+      {
+        "name": "stairwell",
+        "op": "txt2img",
+        "prompt": "very awa, 1girl, solo, short dark hair, blue eyes, black hooded outfit, purple trim, high collar, dagger, sitting, knees up, feet together, looking at viewer, full body, wide shot, narrow stairwell, receding stairs, cyan window light, atmospheric perspective, cinematic, masterpiece, best quality, newest",
+        "model": "obsession-illustrious-xl-v-pred-v1-1"
+      }
+    ]
+  },
+  "created_at": "2026-11-27T03:09:35+00:00",
+  "status": "running",
+  "stages": {
+    "stairwell": {
+      "status": "pending",
+      "rounds": [],
+      "private_inputs": [],
+      "name": "stairwell",
+      "base_seed": 2026112704,
+      "sec_per_candidate": 1256.5480327606201,
+      "n_done": 1
+    }
+  },
+  "errors_recovered": 0,
+  "elapsed_before_min": 0.0,
+  "sessions": [
+    {
+      "started_at": "2026-11-27T03:09:35+00:00",
+      "resumed": false,
+      "actions_run_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45932286765",
+      "runtime": "docker"
+    }
+  ],
+  "elapsed_total_min": 21.85
+}
