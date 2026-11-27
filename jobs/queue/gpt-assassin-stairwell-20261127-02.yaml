@@ -1,0 +1,39 @@
+# Reference design: 1st supplied illustration = seated compact pose, both knees raised,
+# legs drawn toward body, relaxed arms and slight head inclination, not its clothes or hair.
+# 2nd supplied illustration = enclosed worn concrete stairwell, strong receding steps,
+# high right-side windows and barred opening at landing, cool cyan beams, dark teal shadows,
+# hard-edged strips of light on stair treads, atmospheric dust, foreground-to-background depth.
+# One character only. Existing game design source: development:assets/characters/assassin.svg
+# (dark navy short hair, blue-grey eyes, dark hood/high collar, violet edging, dagger).
+# Female interpretation and lower-body costume details are provisional; no original image upload.
+# Keep prompt compact for SDXL CLIP token limit; do not add unapproved models.
+job_id: gpt-assassin-stairwell-20261127-02
+title: "アサシン・青い階段 02 階段下からのあおり"
+backend: diffusers
+time_budget_minutes: 100
+publish: true
+assign_to: {project: kotama-no-bouken, targets: ["assassin_stairwell_still"]}
+limits: {max_rounds: 1, candidates_per_round: 1, patience: 1, target_score: 1.5, max_error_retries: 1}
+defaults:
+  model: obsession-illustrious-xl-v-pred-v1-1
+  pipeline_config: sdxl-base-1-0-config
+  prediction_type: v_prediction
+  zero_terminal_snr: true
+  guidance_rescale: 0.7
+  dtype: float32
+  scheduler: euler
+  width: 832
+  height: 1216
+  steps: 20
+  cfg: 4.5
+  seed: 2026112702
+  attention_slicing: false
+  channels_last: true
+  negative_prompt: "worst quality, bad quality, low quality, old, oldest, jpeg artifacts, watermark, unfinished"
+evaluation:
+  metrics: [composition, artifacts]
+improve: {enabled: false}
+stages:
+  - name: stairwell
+    op: txt2img
+    prompt: "very awa, 1girl, solo, short dark hair, blue eyes, black hooded outfit, purple trim, high collar, dagger, sitting, knees up, leaning against wall, from below, foreshortening, steep concrete stairs, barred window, cyan backlighting, volumetric lighting, cinematic, masterpiece, best quality, newest"
