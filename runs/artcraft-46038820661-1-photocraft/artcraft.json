@@ -1,0 +1,53 @@
+{
+  "version": "photocraft-cli 0.23.1 (45066c482, 2026-11-12)",
+  "mcp": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {
+      "resources": {},
+      "tools": {}
+    },
+    "serverInfo": {
+      "name": "photocraft",
+      "version": "0.23.1"
+    },
+    "instructions": "PhotoCraft image editor. Start with doc_new/doc_open, discover ids and parameter docs with command_list, edit with command_run or command_batch (one history step per command). Inspect with doc_inspect and render_preview; doc_save writes native .pcraft or exports by extension. File paths are relative to the read/write roots granted at launch. ui_inspect/ui_screenshot and other ui_* tools require bridge mode. Read photocraft://document and photocraft://commands for live JSON state."
+  },
+  "seconds": 0.02,
+  "quality": null,
+  "engine": "photocraft",
+  "outputs": {
+    "editable.pcraft": {
+      "sha256": "8cb14ec7e83ae851bf048e7b38b3de8da0237baf88254e6101a4c0498fd01c6a",
+      "bytes": 13024
+    },
+    "after.png": {
+      "sha256": "409e857404ab36cda7d3952b2f99d2ac7bd1503907ea09fd34d85c1af2c82077",
+      "bytes": 1824,
+      "size": [
+        128,
+        128
+      ],
+      "mode": "RGB"
+    },
+    "reopened.png": {
+      "sha256": "409e857404ab36cda7d3952b2f99d2ac7bd1503907ea09fd34d85c1af2c82077",
+      "bytes": 1824,
+      "size": [
+        128,
+        128
+      ],
+      "mode": "RGB"
+    }
+  },
+  "source": {
+    "run_id": "artcraft-studio-handoff-smoke-20261127-170355",
+    "stage": "colored",
+    "actions_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46038703690",
+    "sha256": "84f9a56919a4c90d9b334b112fa915d9d552a9fb63f9f83a7ac478adc7dd9cea",
+    "scan": "SAFETY_CHECK_OK"
+  },
+  "native_roundtrip": true,
+  "actions_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46038820661",
+  "approval": "pending",
+  "editable": "editable.pcraft"
+}
