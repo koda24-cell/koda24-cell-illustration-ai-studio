@@ -18,3 +18,5 @@
 {"t": "2026-11-27T00:10:32+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.17, "stderr": ""}
 {"t": "2026-11-27T00:10:33+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.12, "stderr": ""}
 {"t": "2026-11-27T00:10:33+00:00", "event": "session_end", "status": "time_budget_exhausted"}
+{"t": "2026-11-27T00:11:11+00:00", "event": "session_start", "resumed": true, "remaining_min": 1.5}
+{"t": "2026-11-27T00:11:11+00:00", "event": "candidate_start", "stage": "s3", "round": 0, "candidate": 0, "mem_available_mb": 14810, "swap_free_mb": 3071, "vmhwm_mb": 48, "vmrss_mb": 48}
