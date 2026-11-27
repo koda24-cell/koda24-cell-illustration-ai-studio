@@ -49,7 +49,7 @@
   "status": "running",
   "stages": {
     "colored": {
-      "status": "pending",
+      "status": "done",
       "rounds": [
         {
           "round": 0,
@@ -101,17 +101,7 @@
       },
       "no_improve": 0,
       "first_best": "stages/colored/r00_c0.png",
-      "next_params": {
-        "width": 128,
-        "height": 128,
-        "steps": 6,
-        "cfg": 7.5,
-        "scheduler": "euler_a",
-        "negative_prompt": "",
-        "denoise": 0.5,
-        "prompt": "public colored geometric test pattern",
-        "seed": 1469803197
-      }
+      "stop_reason": "target_reached"
     }
   },
   "errors_recovered": 0,
@@ -124,5 +114,5 @@
       "runtime": "docker"
     }
   ],
-  "elapsed_total_min": 0.02
+  "elapsed_total_min": 0.04
 }
