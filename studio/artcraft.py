@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 
 from PIL import Image, ImageChops
 
+from .allowlist import Allowlist
 from .artcraft_quality import improve
 from .scan import clamscan, require_clamav, safe_extract
 from .util import ID_RE, now_iso, sha256_file
@@ -151,6 +152,25 @@ async def batch(binary, job, inputs, output, resume=False):
     return {"version": cli_version, "mcp": init, "seconds": round(time.monotonic() - started, 2)}
 
 
+def prepare_reference(goal, output):
+    reference = goal.get("reference")
+    if reference is None:
+        return
+    target = output / "reference.png"
+    if "swatch_fixture" in reference:
+        Image.new("RGB", (32, 32), reference["swatch_fixture"]).save(target)
+        return
+    allowlist = Allowlist.load()
+    entry = allowlist.images.get(reference["image_id"])
+    if allowlist.errors or not entry or not entry.public_ok or not entry.derivatives_public_ok:
+        raise ValueError("ArtCraft reference and its derivatives must be approved for public use")
+    source = (ROOT / entry.raw["path"]).resolve()
+    if not source.is_relative_to(ROOT) or sha256_file(source) != entry.raw["sha256"].lower():
+        raise ValueError("ArtCraft reference failed SHA256 verification")
+    with Image.open(source) as image:
+        image.convert("RGBA").save(target)
+
+
 def run(binary, job_path, inputs, output, resume=False):
     job = json.loads(job_path.read_text())
     if job["engine"] not in ENGINES or job["public_test_fixture"] is not True:
@@ -179,6 +199,7 @@ def run(binary, job_path, inputs, output, resume=False):
         if source["scan"] != "SAFETY_CHECK_OK" or source["sha256"] != sha256_file(original):
             raise ValueError("Studio source failed provenance verification")
         shutil.copyfile(original, output / "before.png")
+    prepare_reference(job.get("quality_goal", {}), output)
     evidence = asyncio.run(batch(binary, job, inputs, output, resume))
     files = {}
     for name in job["expected"]:
@@ -244,7 +265,7 @@ def review(source, destination, run_id):
                 panel.save(destination / comparison)
     quality = result.get("quality")
     if quality:
-        for preview in source.glob("preview-*.png"):
+        for preview in [*source.glob("preview-*.png"), *source.glob("reference.png")]:
             shutil.copyfile(preview, destination / preview.name)
     operations = json.loads((source / "operations.json").read_text())
     editable = next(name for name in result["outputs"] if name.endswith((".pcraft", ".vectorcraft")))
@@ -259,7 +280,7 @@ def review(source, destination, run_id):
         "job": {"operations": [entry["operation"] for entry in operations]},
         "stages": {"edit": {"status": "done", "stop_reason": quality["stop"] if quality else "native roundtrip",
                             "best": {"image": "after.png"}, "comparison": comparison,
-                            "rounds": [{"candidates": [{"image": p.name} for p in sorted(destination.glob("preview-*.png"))]}]}},
+                            "rounds": [{"candidates": [{"image": p.name} for p in sorted([*destination.glob("preview-*.png"), *destination.glob("reference.png")])]}]}},
     })
     write_json(destination / "after.json", {"evaluation": {"note": "Native PNG roundtrip: pixel-identical"}})
     write_json(destination / "artcraft.json", {**result, "editable": editable})

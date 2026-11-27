@@ -1,10 +1,11 @@
 """Image-guided ArtCraft edits for explicitly measurable color and position goals."""
 import colorsys
 import json
-from pathlib import Path
 from statistics import median
 
 from PIL import Image, ImageChops, ImageColor
+
+from .evaluate import windowed_ssim
 
 
 def sample(path, box):
@@ -47,6 +48,18 @@ async def improve(call, engine, goal, output, *, resume=False):
     inspect_tool = "doc_inspect" if photo else "inspect_document"
     ext = "pcraft" if photo else "vectorcraft"
     checkpoint = output / "quality.json"
+    target = ImageColor.getrgb(goal["rgb"]) if "rgb" in goal else None
+    reference = None
+    if "reference" in goal:
+        # The runner prepares this image before opening the document in MCP.
+        path = output / "reference.png"
+        with Image.open(path) as image:
+            reference = image.convert("RGB")
+        target = sample(path, goal["reference"]["sample"])
+    thresholds = {"color": 3, "position": 3, "stroke": 0.25}
+
+    def met(errors):
+        return all(value <= thresholds[issue] for issue, value in errors.items())
 
     async def file_op(tool, filename):
         await call(tool, {"path": filename})
@@ -59,6 +72,9 @@ async def improve(call, engine, goal, output, *, resume=False):
         await file_op(save_tool, f"checkpoint-00.{ext}")
         report = {"goal": goal, "history": [], "best_preview": "preview-00.png",
                   "best_native": f"checkpoint-00.{ext}"}
+        if reference is not None:
+            report["derived_target_rgb"] = list(target)
+            report["reference_preview"] = "reference.png"
 
     def save_report():
         temporary = checkpoint.with_suffix(".tmp")
@@ -69,8 +85,13 @@ async def improve(call, engine, goal, output, *, resume=False):
         raw = await call(inspect_tool, {})
         doc = json.loads(next(item["text"] for item in raw["content"] if item["type"] == "text"))
         measured = {}
-        if "rgb" in goal:
+        if target is not None:
             measured["rgb"] = sample(output / filename, goal["sample"])
+        if reference is not None:
+            with Image.open(output / filename) as image:
+                crop = image.convert("RGB").crop(goal["sample"])
+                expected = reference.crop(goal["reference"]["sample"])
+                measured["reference_ssim"] = round(windowed_ssim(crop, expected), 4)
         if not photo:
             matches = find_object(doc.get("layers", []), goal["object"])
             if len(matches) != 1:
@@ -82,11 +103,13 @@ async def improve(call, engine, goal, output, *, resume=False):
 
     def score(measured):
         result = {}
-        if "rgb" in goal:
-            result["color"] = distance(measured["rgb"], ImageColor.getrgb(goal["rgb"]))
+        if target is not None:
+            result["color"] = distance(measured["rgb"], target)
         if "position" in goal:
             bounds = measured["object"]["bounds"]
             result["position"] = distance((bounds["x"], bounds["y"]), goal["position"])
+        if "stroke" in goal:
+            result["stroke"] = abs(measured["object"]["strokeWidth"] - goal["stroke"]["width"])
         return result
 
     before = await assess(report["best_preview"])
@@ -94,11 +117,11 @@ async def improve(call, engine, goal, output, *, resume=False):
     blocked = {entry["issue"] for entry in report["history"] if not entry["accepted"]}
     for number in range(len(report["history"]) + 1, 4):
         errors = score(before)
-        issues = [issue for issue, value in errors.items() if value > 3 and issue not in blocked]
+        issues = [issue for issue, value in errors.items() if value > thresholds[issue] and issue not in blocked]
         if not issues:
-            report["stop"] = "target_met" if max(errors.values()) <= 3 else "stalled"
+            report["stop"] = "target_met" if met(errors) else "stalled"
             break
-        issue = max(issues, key=errors.get)
+        issue = max(issues, key=lambda item: errors[item] / thresholds[item])
         if issue == "position":
             obj = before["object"]
             bounds = obj["bounds"]
@@ -106,16 +129,20 @@ async def improve(call, engine, goal, output, *, resume=False):
                 "ids": [obj["id"]], "dx": goal["position"][0] - bounds["x"],
                 "dy": goal["position"][1] - bounds["y"],
             }}
+        elif issue == "stroke":
+            tool, args = "set_paint", {"ids": [before["object"]["id"]],
+                                      "stroke": goal["stroke"]["color"],
+                                      "strokeWidth": goal["stroke"]["width"]}
         elif photo:
             source = colorsys.rgb_to_hsv(*(value / 255 for value in before["rgb"]))
-            desired = colorsys.rgb_to_hsv(*(value / 255 for value in ImageColor.getrgb(goal["rgb"])))
+            desired = colorsys.rgb_to_hsv(*(value / 255 for value in target))
             tool, args = "command_run", {"id": "layer.newAdjustmentLayer.hueSaturation", "params": {
                 "hue": round(((desired[0] - source[0] + 0.5) % 1 - 0.5) * 360),
                 "saturation": round((desired[1] - source[1]) * 100),
                 "lightness": round((desired[2] - source[2]) * 100),
             }}
         else:
-            tool, args = "set_paint", {"ids": [before["object"]["id"]], "fill": goal["rgb"]}
+            tool, args = "set_paint", {"ids": [before["object"]["id"]], "fill": "#%02x%02x%02x" % tuple(round(value) for value in target)}
         await call(tool, args)
         preview = f"preview-{number:02}.png"
         await file_op(export_tool, preview)
@@ -127,6 +154,10 @@ async def improve(call, engine, goal, output, *, resume=False):
             "issue": issue, "before": errors, "after": next_errors, "protected": protected,
             "tool": tool, "arguments": args, "preview": preview, "accepted": accepted,
         })
+        if reference is not None:
+            report["history"][-1]["reference_ssim"] = {
+                "before": before["reference_ssim"], "after": after["reference_ssim"],
+            }
         if accepted:
             native = f"checkpoint-{number:02}.{ext}"
             await file_op(save_tool, native)
@@ -137,6 +168,6 @@ async def improve(call, engine, goal, output, *, resume=False):
             await file_op(open_tool, report["best_native"])
         save_report()
     else:
-        report["stop"] = "target_met" if max(score(before).values()) <= 3 else "iteration_limit"
+        report["stop"] = "target_met" if met(score(before)) else "iteration_limit"
     save_report()
     return report
