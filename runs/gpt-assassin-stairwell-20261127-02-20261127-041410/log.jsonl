@@ -5,3 +5,5 @@
 {"t": "2026-11-27T04:48:48+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.96, "stderr": ""}
 {"t": "2026-11-27T04:48:48+00:00", "event": "stage_done", "stage": "stairwell", "mem_available_mb": 3562, "swap_free_mb": 8357, "vmhwm_mb": 15024, "vmrss_mb": 11407}
 {"t": "2026-11-27T04:48:49+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.41, "stderr": ""}
+{"t": "2026-11-27T04:48:50+00:00", "event": "checkpoint", "exit_code": 0, "seconds": 1.52, "stderr": ""}
+{"t": "2026-11-27T04:48:50+00:00", "event": "session_end", "status": "completed"}
