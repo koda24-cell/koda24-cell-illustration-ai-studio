@@ -1,0 +1,151 @@
+{
+  "version": "photocraft-cli 0.23.1 (45066c482, 2026-11-12)",
+  "mcp": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {
+      "resources": {},
+      "tools": {}
+    },
+    "serverInfo": {
+      "name": "photocraft",
+      "version": "0.23.1"
+    },
+    "instructions": "PhotoCraft image editor. Start with doc_new/doc_open, discover ids and parameter docs with command_list, edit with command_run or command_batch (one history step per command). Inspect with doc_inspect and render_preview; doc_save writes native .pcraft or exports by extension. File paths are relative to the read/write roots granted at launch. ui_inspect/ui_screenshot and other ui_* tools require bridge mode. Read photocraft://document and photocraft://commands for live JSON state."
+  },
+  "seconds": 0.08,
+  "quality": {
+    "goal": {
+      "rgb": "#5ae09d",
+      "sample": [
+        28,
+        20,
+        36,
+        28
+      ]
+    },
+    "history": [
+      {
+        "issue": "color",
+        "before": {
+          "color": 118.33333333333333
+        },
+        "after": {
+          "color": 15.333333333333334
+        },
+        "protected": true,
+        "tool": "command_run",
+        "arguments": {
+          "id": "layer.newAdjustmentLayer.hueSaturation",
+          "params": {
+            "hue": 135,
+            "saturation": -13,
+            "lightness": 0
+          }
+        },
+        "preview": "preview-01.png",
+        "accepted": true
+      },
+      {
+        "issue": "color",
+        "before": {
+          "color": 15.333333333333334
+        },
+        "after": {
+          "color": 10.666666666666666
+        },
+        "protected": true,
+        "tool": "command_run",
+        "arguments": {
+          "id": "layer.newAdjustmentLayer.hueSaturation",
+          "params": {
+            "hue": 0,
+            "saturation": -7,
+            "lightness": 4
+          }
+        },
+        "preview": "preview-02.png",
+        "accepted": true
+      },
+      {
+        "issue": "color",
+        "before": {
+          "color": 10.666666666666666
+        },
+        "after": {
+          "color": 6.666666666666667
+        },
+        "protected": true,
+        "tool": "command_run",
+        "arguments": {
+          "id": "layer.newAdjustmentLayer.hueSaturation",
+          "params": {
+            "hue": 0,
+            "saturation": -1,
+            "lightness": 5
+          }
+        },
+        "preview": "preview-03.png",
+        "accepted": true
+      }
+    ],
+    "best_preview": "preview-03.png",
+    "best_native": "checkpoint-03.pcraft",
+    "stop": "iteration_limit"
+  },
+  "engine": "photocraft",
+  "outputs": {
+    "after.png": {
+      "sha256": "4c28366d91df6c43015bbe5c859d064d1aa3828aeeef935e1c8fde1f96d92336",
+      "bytes": 1057,
+      "size": [
+        64,
+        48
+      ],
+      "mode": "RGB"
+    },
+    "reopened.png": {
+      "sha256": "4c28366d91df6c43015bbe5c859d064d1aa3828aeeef935e1c8fde1f96d92336",
+      "bytes": 1057,
+      "size": [
+        64,
+        48
+      ],
+      "mode": "RGB"
+    },
+    "editable.pcraft": {
+      "sha256": "e285dabc0457d37e8b2860a40aad7e0e6fad7baf77870501d2ad92d463b56eb9",
+      "bytes": 20654
+    },
+    "format.psd": {
+      "sha256": "3a97715f89ea1b71dab2bb0ca6e71107ddee07a71f65ea5f6e47f1572b7709ed",
+      "bytes": 6120
+    },
+    "format.psb": {
+      "sha256": "9a6fbb7e9d86efc6f32b3e1f3645a98915629c29ac460ff3873cbf020451c849",
+      "bytes": 7348
+    },
+    "format-psd.png": {
+      "sha256": "4c28366d91df6c43015bbe5c859d064d1aa3828aeeef935e1c8fde1f96d92336",
+      "bytes": 1057,
+      "size": [
+        64,
+        48
+      ],
+      "mode": "RGB"
+    },
+    "format-psb.png": {
+      "sha256": "4c28366d91df6c43015bbe5c859d064d1aa3828aeeef935e1c8fde1f96d92336",
+      "bytes": 1057,
+      "size": [
+        64,
+        48
+      ],
+      "mode": "RGB"
+    }
+  },
+  "source": null,
+  "native_roundtrip": true,
+  "actions_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46040625017",
+  "approval": "pending",
+  "editable": "editable.pcraft"
+}
