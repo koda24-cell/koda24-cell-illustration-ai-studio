@@ -56,7 +56,7 @@
     ]
   },
   "created_at": "2026-11-27T05:58:48+00:00",
-  "status": "running",
+  "status": "completed",
   "stages": {
     "reaper": {
       "status": "done",
@@ -135,8 +135,10 @@
       "started_at": "2026-11-27T05:58:48+00:00",
       "resumed": false,
       "actions_run_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45948772063",
-      "runtime": "docker"
+      "runtime": "docker",
+      "ended_at": "2026-11-27T06:21:39+00:00"
     }
   ],
-  "elapsed_total_min": 22.83
+  "elapsed_total_min": 22.85,
+  "finished_at": "2026-11-27T06:21:39+00:00"
 }
