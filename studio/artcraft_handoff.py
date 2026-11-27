@@ -14,7 +14,7 @@ def stage(runs, actions_url, target):
     for manifest in runs.glob("*/run.json"):
         result = json.loads(manifest.read_text())
         if (actions_url not in result.get("actions_runs", [])
-                or result.get("status") != "done" or result.get("publish") is not True
+                or result.get("status") != "completed" or result.get("publish") is not True
                 or result.get("has_private_inputs") is not False
                 or not ID_RE.fullmatch(manifest.parent.name)):
             continue
