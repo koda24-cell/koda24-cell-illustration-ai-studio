@@ -1,0 +1,119 @@
+{
+  "run_id": "docker-production-check-20261127-004119",
+  "job_id": "docker-production-check",
+  "title": "共通Docker環境の実制作確認（連続生成→表情差分→透過）",
+  "status": "completed",
+  "backend": "diffusers",
+  "backend_info": {
+    "backend": "diffusers",
+    "diffusers": "0.43.0",
+    "torch": "2.15.0+cpu",
+    "device": "cpu",
+    "threads": 4,
+    "model_load_seconds": 32.7
+  },
+  "created_at": "2026-11-27T00:41:19+00:00",
+  "finished_at": "2026-11-27T02:12:49+00:00",
+  "elapsed_min": 91.53,
+  "models": [
+    {
+      "id": "obsession-illustrious-xl-v-pred-v1-1",
+      "kind": "checkpoint",
+      "sha256": "104b9362d2ab82797b6b26a7eed043b5fd042bec5ba00cccaf3d8ee08bb29b93",
+      "name": "Obsession (Illustrious-XL)",
+      "url": "https://civitai.com/models/820208?modelVersionId=1494740"
+    },
+    {
+      "id": "sdxl-base-1-0-config",
+      "kind": "pipeline_config",
+      "sha256": "6d7b93508390ab91ac5bfbe4aeb4dc2d83f7bb1b05fb069d714b5b0c75f70d44",
+      "name": "stabilityai/stable-diffusion-xl-base-1.0 (pipeline_config)",
+      "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/tree/462165984030d82259a11f4367a4eed129e94a7b"
+    }
+  ],
+  "errors_recovered": 0,
+  "fatal_error": null,
+  "stages": {
+    "hero": {
+      "status": "done",
+      "stop_reason": "max_rounds",
+      "best": {
+        "image": "stages/hero/r00_c0.png",
+        "score": 1.0,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.5,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261201,
+          "prompt": "masterpiece, best quality, newest, general, 1boy, solo, full body, standing, young adventurer, blue scarf, leather vest, short black hair, determined smile, simple background, white background"
+        }
+      },
+      "comparison": null,
+      "private_inputs": []
+    },
+    "expression_surprised": {
+      "status": "done",
+      "stop_reason": "max_rounds",
+      "best": {
+        "image": "stages/expression_surprised/r00_c0.png",
+        "score": 0.9818,
+        "round": 0,
+        "params": {
+          "width": 832,
+          "height": 1216,
+          "steps": 20,
+          "cfg": 4.5,
+          "scheduler": "euler",
+          "negative_prompt": "nsfw, worst quality, low quality, lowres, bad anatomy, bad hands, jpeg artifacts, watermark, signature",
+          "denoise": 0.55,
+          "model": "obsession-illustrious-xl-v-pred-v1-1",
+          "pipeline_config": "sdxl-base-1-0-config",
+          "prediction_type": "v_prediction",
+          "zero_terminal_snr": true,
+          "guidance_rescale": 0.7,
+          "dtype": "float32",
+          "seed": 20261201,
+          "prompt": "masterpiece, best quality, newest, general, 1boy, solo, short black hair, surprised, open mouth, wide eyes, blue scarf"
+        }
+      },
+      "comparison": "comparisons/expression_surprised_latest.png",
+      "private_inputs": []
+    },
+    "cutout": {
+      "status": "done",
+      "stop_reason": "single_pass",
+      "best": {
+        "image": "stages/cutout/r00_c0.png",
+        "score": 1.0,
+        "round": 0
+      },
+      "comparison": null,
+      "private_inputs": []
+    }
+  },
+  "publish": true,
+  "assign_to": {},
+  "approval": "unapproved（approvals/approvals.yaml でユーザーのみ変更）",
+  "actions_runs": [
+    "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45917955420"
+  ],
+  "runtime": "docker",
+  "timing": {
+    "model_load_seconds_total": 32.7,
+    "generations": 4,
+    "first_generation_seconds": 1694.07,
+    "later_generation_seconds_avg": 1248.0
+  },
+  "has_private_inputs": false
+}
