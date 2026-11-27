@@ -32,3 +32,9 @@
 - CPU 実測: txt2img 約40分 / inpaint 約13分 / img2img 約20分 / outpaint 約58分。ピークメモリ約15GB → produce でスワップ12GB追加済み。
 - ライセンス注意: Civitai フラグは allowCommercialUse=[RentCivit] のみ（生成画像の販売を含まない）。商用作品での使用可否はユーザー確認待ち。
 - 次: ユーザーが LoRA / ControlNet / IP-Adapter 等を指定したら、それらの実機検証。評価モデル（CLIP 等）は未指定。
+
+### 2026-11-27 担当: Claude（共通 Docker 実行基盤）
+- 以後のイラスト制作は共通イメージで実行: `jobs/queue/*.yaml` を push（または `produce` 手動）。ワークフローは新規作成しない。
+- 実測: 実行開始までの準備 約270秒 → 約80秒。生成は CPU 律速で Docker 化では変わらず、`channels_last` 既定化で約9%短縮（出力同一）。詳細は VERIFICATION.md。
+- 旧方式の速度比較 run（#45905173128）は最終保存に失敗。成果物から `recover-artifact` で復元可能（PR #13 マージ後）。
+- イメージを更新したら `config/runtime.yaml` の digest を更新する。

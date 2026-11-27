@@ -12,6 +12,8 @@ defaults:
   zero_terminal_snr: true
   guidance_rescale: 0.7
   dtype: float32
+  attention_slicing: true   # 比較用に旧既定を明示
+  channels_last: false
   scheduler: euler
   width: 832
   height: 1216

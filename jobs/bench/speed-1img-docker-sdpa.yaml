@@ -13,6 +13,7 @@ defaults:
   guidance_rescale: 0.7
   dtype: float32
   attention_slicing: false
+  channels_last: false
   scheduler: euler
   width: 832
   height: 1216

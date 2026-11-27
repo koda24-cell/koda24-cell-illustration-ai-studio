@@ -39,7 +39,7 @@ models:
       width: 832
       height: 1216
       clip_skip: null
-      notes: '実測済み: euler, 20 steps, cfg 4.5, 832x1216, fp32, v_prediction+zero_terminal_snr, guidance_rescale 0.7 で破綻なく生成（1枚約41分）。bfloat16
+      notes: '実測済み: euler, 20 steps, cfg 4.5, 832x1216, fp32, v_prediction+zero_terminal_snr, guidance_rescale 0.7。channels_last=true・attention_slicing=false（既定）で出力同一のまま約9%高速。bfloat16
         は CPU で大幅に遅い'
     trigger_words: []
     compatible_with: []
@@ -54,11 +54,12 @@ models:
       run: obsession-bench-fp32-20261126-155303
       actions: https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/45852576694
       by_operation:
-        txt2img_832x1216_20steps: 約40分（モデル読込 約1分は別）
+        txt2img_832x1216_20steps: 約33〜35分（共通Docker・既定の高速設定 channels_last+SDPA）／約37〜38分（旧既定）。読込 約45〜60秒は別
         inpaint_denoise0.55: 約13〜14分/枚
         img2img_denoise0.45: 約20分/枚
         outpaint_1216x1216: 約58分/枚
         peak_memory: RSS 約15GB（16GB RAM + 追加スワップ12GBで安定。スワップ無しでは強制終了）
+      speed_benchmark: docs/VERIFICATION.md「共通 Docker 実行基盤と高速化の実測」
     results:
     - run: obsession-bench-fp32-20261126-155303
       candidate: stages/standing/r00_c0.png
