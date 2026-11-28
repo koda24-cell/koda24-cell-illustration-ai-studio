@@ -6,6 +6,7 @@ from statistics import median
 from PIL import Image, ImageChops, ImageColor
 
 from .evaluate import windowed_ssim
+from .artcraft_vision import LABELS, VisionReviewer
 
 
 def sample(path, box):
@@ -57,6 +58,9 @@ async def improve(call, engine, goal, output, *, resume=False):
             reference = image.convert("RGB")
         target = sample(path, goal["reference"]["sample"])
     thresholds = {"color": 3, "position": 3, "stroke": 0.25}
+    reviewer = VisionReviewer() if goal.get("vision_review") else None
+    intent = goal.get("intent", "Match the reference color and requested layout.")
+    context_images = [path] if reference is not None else []
 
     def met(errors):
         return all(value <= thresholds[issue] for issue, value in errors.items())
@@ -112,6 +116,8 @@ async def improve(call, engine, goal, output, *, resume=False):
             result["stroke"] = abs(measured["object"]["strokeWidth"] - goal["stroke"]["width"])
         return result
 
+    if reviewer is not None:
+        report["vision_model_load_seconds"] = reviewer.load_seconds
     before = await assess(report["best_preview"])
     save_report()
     blocked = {entry["issue"] for entry in report["history"] if not entry["accepted"]}
@@ -121,7 +127,16 @@ async def improve(call, engine, goal, output, *, resume=False):
         if not issues:
             report["stop"] = "target_met" if met(errors) else "stalled"
             break
-        issue = max(issues, key=lambda item: errors[item] / thresholds[item])
+        priority = None
+        if reviewer is not None and len(issues) > 1:
+            priority = reviewer.choose([output / report["best_preview"], *context_images],
+                                       f"First image is the current design. A second image, if supplied, is a reference swatch. "
+                                       f"Design intent: {intent} Which edit should be performed next?",
+                                       [LABELS[item] for item in issues])
+            issue = issues[priority["index"]]
+            priority["options"] = issues
+        else:
+            issue = max(issues, key=lambda item: errors[item] / thresholds[item])
         if issue == "position":
             obj = before["object"]
             bounds = obj["bounds"]
@@ -154,6 +169,14 @@ async def improve(call, engine, goal, output, *, resume=False):
             "issue": issue, "before": errors, "after": next_errors, "protected": protected,
             "tool": tool, "arguments": args, "preview": preview, "accepted": accepted,
         })
+        if priority is not None:
+            report["history"][-1]["vision_priority"] = priority
+        if reviewer is not None:
+            review = reviewer.choose([output / report["best_preview"], output / preview, *context_images],
+                                     f"Compare the first two designs against the intent: {intent} "
+                                     "If there is a third image, it is the reference color swatch. Which design better meets the intent?",
+                                     ["The first design", "The second design"])
+            report["history"][-1]["vision_comparison"] = review
         if reference is not None:
             report["history"][-1]["reference_ssim"] = {
                 "before": before["reference_ssim"], "after": after["reference_ssim"],

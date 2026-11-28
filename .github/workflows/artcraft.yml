@@ -1,13 +1,15 @@
 name: ArtCraft CPU
 on:
   push:
-    branches: [gpt/artcraft-reference-review, main]
+    branches: [gpt/artcraft-smolvlm, main]
     paths:
       - .github/workflows/artcraft.yml
       - studio/artcraft.py
       - studio/artcraft_handoff.py
       - studio/artcraft_resume.py
       - studio/artcraft_quality.py
+      - studio/artcraft_vision.py
+      - allowlist/models.yaml
       - config/artcraft.json
       - jobs/artcraft/**
   workflow_dispatch:
@@ -129,12 +131,38 @@ jobs:
             -v "$PWD/artcraft-results:/results" "$STUDIO_IMAGE" sh -ec 'freshclam --stdout &&
               python -m studio.artcraft_resume /checkpoint.zip "jobs/artcraft/$1.json" /results/output' sh "$ENGINE"
           sudo chown -R "$(id -u):$(id -g)" artcraft-results
+      - name: Restore approved visual model cache
+        id: visual-cache
+        if: steps.runtime.outputs.image != '' && github.event_name != 'workflow_run'
+        uses: actions/cache/restore@v4
+        with:
+          path: artcraft-vision-cache/models
+          key: artcraft-vision-linux-${{ hashFiles('allowlist/models.yaml') }}
+      - name: Stage approved visual model
+        if: steps.runtime.outputs.image != '' && github.event_name != 'workflow_run'
+        run: |
+          mkdir -p artcraft-vision-cache
+          docker run --rm -e STUDIO_CACHE=/vision-cache -v "$PWD:/work:ro" \
+            -v "$PWD/artcraft-vision-cache:/vision-cache" "$STUDIO_IMAGE" sh -ec '
+              if ! python -m studio.artcraft_vision; then
+                freshclam --stdout
+                python -m studio models-fetch --only smolvlm2-500m-artcraft --report /vision-cache/model_fetch_report.json
+                python -m studio.artcraft_vision
+              fi
+            '
+          sudo chown -R "$(id -u):$(id -g)" artcraft-vision-cache
+      - name: Save scanned model cache
+        if: steps.runtime.outputs.image != '' && github.event_name != 'workflow_run' && steps.visual-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: artcraft-vision-cache/models
+          key: artcraft-vision-linux-${{ hashFiles('allowlist/models.yaml') }}
       - name: Execute MCP batch offline
         if: steps.runtime.outputs.image != ''
         env:
           ARTCRAFT_EVENT: ${{ github.event_name }}
         run: |
-          mkdir -p artcraft-results
+          mkdir -p artcraft-results artcraft-vision-cache
           job="jobs/artcraft/$ENGINE.json"
           if [ "$ARTCRAFT_EVENT" = workflow_run ]; then job=jobs/artcraft/handoff.json; fi
           resume=()
@@ -145,6 +173,7 @@ jobs:
               --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
               --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
               -v "$PWD:/work:ro" -v "$PWD/artcraft-results:/results" \
+              -v "$PWD/artcraft-vision-cache:/vision-cache:ro" \
               "$ARTCRAFT_IMAGE" sh -ec '
                 binary=$(find "/opt/artcraft/$1" -type f -path "*/bin/$1-cli" -print)
                 test -x "$binary"
@@ -181,7 +210,7 @@ jobs:
       - name: Verify rejected edit restores the best native document
         if: steps.runtime.outputs.image != '' && matrix.engine == 'vectorcraft'
         run: |
-          jq '.quality_goal |= (del(.position, .stroke) | .protected = [[45,46,52,53]])' \
+          jq '.quality_goal |= (del(.position, .stroke, .vision_review) | .protected = [[45,46,52,53]])' \
             jobs/artcraft/vectorcraft.json > artcraft-evidence/rollback-job.json
           docker run --rm --init --network none --read-only --cap-drop ALL \
             --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
@@ -254,6 +283,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: artcraft-vision-cache/models
+          key: artcraft-vision-linux-${{ hashFiles('allowlist/models.yaml') }}
+          fail-on-cache-miss: true
       - name: Resume PhotoCraft on a separate runner
         run: |
           image=$(awk '/^image:/{print $2}' config/runtime.yaml)
@@ -267,6 +301,8 @@ jobs:
           trap 'rm -f "$archive"' EXIT
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > "$archive"
           mkdir resumed artcraft-resume-inputs
+          docker run --rm -e STUDIO_CACHE=/vision-cache -v "$PWD:/work:ro" \
+            -v "$PWD/artcraft-vision-cache:/vision-cache" "$runtime" python -m studio.artcraft_vision
           docker run --rm -v "$PWD:/work:ro" -v "$archive:/checkpoint.zip:ro" \
             -v "$PWD/resumed:/results" "$runtime" sh -ec 'freshclam --stdout &&
               python -m studio.artcraft_resume /checkpoint.zip jobs/artcraft/photocraft.json /results/output'
@@ -280,7 +316,8 @@ jobs:
           docker run --rm --init --network none --read-only --cap-drop ALL \
             --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
             --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
-            -v "$PWD:/work:ro" -v "$PWD/resumed:/results" "$runtime" sh -ec '
+            -v "$PWD:/work:ro" -v "$PWD/resumed:/results" \
+            -v "$PWD/artcraft-vision-cache:/vision-cache:ro" "$runtime" sh -ec '
               binary=$(find /opt/artcraft/photocraft -type f -path "*/bin/photocraft-cli" -print)
               exec python -m studio.artcraft run "$binary" jobs/artcraft/photocraft.json artcraft-resume-inputs /results/output --resume'
           jq -e '.quality.history | length == 3' resumed/output/verification.json
