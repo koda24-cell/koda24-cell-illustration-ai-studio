@@ -1,0 +1,65 @@
+name: UI ArtCraft pilot
+on:
+  push:
+    branches: [gpt/ui-artcraft-pilot-20261128]
+    paths: ['jobs/artcraft/ui-command-pilot.json', '.github/workflows/ui-artcraft-pilot.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: read
+jobs:
+  vectorcraft:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    env:
+      ARTCRAFT_IMAGE: ghcr.io/koda24-cell/illustration-ai-studio-cpu@sha256:4cea0afc26cffef8fc53d2cfb4660789a7af6380315df7f75c507c2b67d02ace
+      ARTCRAFT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reuse verified pinned ArtCraft runtime
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          docker pull "$ARTCRAFT_IMAGE"
+          docker run --rm -e GITHUB_TOKEN -e GITHUB_REPOSITORY -v "$PWD:/work:ro" "$ARTCRAFT_IMAGE" python -m studio budget-check --minutes 22
+          mkdir -p artcraft-inputs artcraft-results artcraft-evidence artcraft-vision-cache
+          docker run --rm --network none "$ARTCRAFT_IMAGE" cat /opt/artcraft/evidence/scans.json > artcraft-evidence/runtime-scans.json
+      - uses: actions/cache/restore@v4
+        with:
+          path: artcraft-vision-cache/models
+          key: artcraft-vision-linux-${{ hashFiles('allowlist/models.yaml') }}
+      - name: Stage allowlisted vision model
+        run: |
+          docker run --rm -e STUDIO_CACHE=/vision-cache -v "$PWD:/work:ro" -v "$PWD/artcraft-vision-cache:/vision-cache" "$ARTCRAFT_IMAGE" sh -ec '
+            if ! python -m studio.artcraft_vision; then
+              freshclam --stdout
+              python -m studio models-fetch --only smolvlm2-500m-artcraft --report /vision-cache/model_fetch_report.json
+              python -m studio.artcraft_vision
+            fi'
+          sudo chown -R "$(id -u):$(id -g)" artcraft-vision-cache
+      - name: Real VectorCraft MCP with SmolVLM2 review
+        run: |
+          docker run --rm --init --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user "$(id -u):$(id -g)" \
+            --tmpfs /tmp:rw,nosuid,nodev,size=64m -e HOME=/tmp -e ARTCRAFT_RUN_URL \
+            -v "$PWD:/work:ro" -v "$PWD/artcraft-results:/results" \
+            -v "$PWD/artcraft-vision-cache:/vision-cache:ro" \
+            "$ARTCRAFT_IMAGE" sh -ec '
+              binary=$(find /opt/artcraft/vectorcraft -type f -path "*/bin/vectorcraft-cli" -print)
+              test -x "$binary"
+              exec python -m studio.artcraft run "$binary" jobs/artcraft/ui-command-pilot.json artcraft-inputs /results/output'
+      - name: Validate exported game asset
+        run: |
+          docker run --rm --network none -v "$PWD/artcraft-results:/results:ro" "$ARTCRAFT_IMAGE" python -c 'from PIL import Image; import json; from pathlib import Path; p=Path("/results/output"); q=json.loads((p/"quality.json").read_text()); im=Image.open(p/"after.png").convert("RGBA"); assert im.size==(192,56); assert im.getpixel((0,0))[3]==0; assert any(h.get("vision_comparison") for h in q["history"]); assert any(h["accepted"] for h in q["history"]); assert (p/"after.svg").stat().st_size < 100000; print(json.dumps(q,ensure_ascii=False))'
+          docker run --rm -v "$PWD/artcraft-results:/results:ro" "$ARTCRAFT_IMAGE" sh -ec 'freshclam --stdout && clamscan --recursive /results' | tee artcraft-evidence/output-scan.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-command-pilot
+          path: |
+            artcraft-results/
+            artcraft-evidence/
+          retention-days: 7
