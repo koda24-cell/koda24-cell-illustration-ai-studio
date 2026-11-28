@@ -132,8 +132,9 @@ jobs:
               python -m studio.artcraft_resume /checkpoint.zip "jobs/artcraft/$1.json" /results/output' sh "$ENGINE"
           sudo chown -R "$(id -u):$(id -g)" artcraft-results
       - name: Restore approved visual model cache
+        id: visual-cache
         if: steps.runtime.outputs.image != '' && github.event_name != 'workflow_run'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: artcraft-vision-cache/models
           key: artcraft-vision-linux-${{ hashFiles('allowlist/models.yaml') }}
@@ -150,6 +151,12 @@ jobs:
               fi
             '
           sudo chown -R "$(id -u):$(id -g)" artcraft-vision-cache
+      - name: Save scanned model cache
+        if: steps.runtime.outputs.image != '' && github.event_name != 'workflow_run' && steps.visual-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: artcraft-vision-cache/models
+          key: artcraft-vision-linux-${{ hashFiles('allowlist/models.yaml') }}
       - name: Execute MCP batch offline
         if: steps.runtime.outputs.image != ''
         env:
