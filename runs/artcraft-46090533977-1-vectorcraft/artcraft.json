@@ -1,0 +1,260 @@
+{
+  "version": "vectorcraft-cli 0.24.1",
+  "mcp": {
+    "capabilities": {
+      "completions": {},
+      "logging": {},
+      "prompts": {
+        "listChanged": false
+      },
+      "resources": {},
+      "tools": {}
+    },
+    "instructions": "VectorCraft is a professional vector illustration app. Coordinates are points in document space (y down, origin at the first artboard's top-left; a new document is 612×792). Draw with draw_shape / draw_path, change colours with set_paint, look with render_preview and doc_inspect. Every menu action is a command: find it with command_list and run it with command_run (or command_batch for several). New objects become the selection, and most commands act on the selection (or on explicit `ids`). prompts/list has ready-made workflows, completion/complete finishes a command id, a format, an effect or a swatch name, and vectorcraft://object/{id}, vectorcraft://command/{id}, vectorcraft://effect/{id} and vectorcraft://swatch/{name} read one thing at a time instead of the whole document. Backend: headless.",
+    "protocolVersion": "2025-06-18",
+    "serverInfo": {
+      "name": "vectorcraft",
+      "title": "VectorCraft",
+      "version": "0.24.1"
+    }
+  },
+  "seconds": 16.08,
+  "quality": {
+    "goal": {
+      "sample": [
+        45,
+        46,
+        52,
+        53
+      ],
+      "position": [
+        23,
+        31
+      ],
+      "object": "Accent",
+      "protected": [
+        [
+          0,
+          0,
+          8,
+          8
+        ]
+      ],
+      "reference": {
+        "sample": [
+          0,
+          0,
+          32,
+          32
+        ],
+        "swatch_fixture": "#42cad8"
+      },
+      "stroke": {
+        "width": 3,
+        "color": "#102030"
+      },
+      "intent": "Use the swatch as the accent fill, move the accent, and add the specified outline width.",
+      "vision_review": true
+    },
+    "history": [
+      {
+        "issue": "color",
+        "before": {
+          "color": 155.66666666666666,
+          "position": 3.875,
+          "stroke": 3.0
+        },
+        "after": {
+          "color": 0.0,
+          "position": 3.875,
+          "stroke": 3.0
+        },
+        "protected": true,
+        "tool": "set_paint",
+        "arguments": {
+          "ids": [
+            5
+          ],
+          "fill": "#42cad8"
+        },
+        "preview": "preview-01.png",
+        "accepted": true,
+        "vision_priority": {
+          "index": 0,
+          "logits": {
+            "A": 23.39900016784668,
+            "B": 22.679513931274414,
+            "C": 22.813297271728516
+          },
+          "model": "smolvlm2-500m-artcraft",
+          "seconds": 2.11,
+          "options": [
+            "color",
+            "position",
+            "stroke"
+          ]
+        },
+        "vision_comparison": {
+          "index": 1,
+          "logits": {
+            "A": 22.741220474243164,
+            "B": 23.222074508666992
+          },
+          "model": "smolvlm2-500m-artcraft",
+          "seconds": 2.93
+        },
+        "reference_ssim": {
+          "before": 0.975,
+          "after": 1.0
+        }
+      },
+      {
+        "issue": "position",
+        "before": {
+          "color": 0.0,
+          "position": 3.875,
+          "stroke": 3.0
+        },
+        "after": {
+          "color": 0.0,
+          "position": 0.0,
+          "stroke": 3.0
+        },
+        "protected": true,
+        "tool": "run_command",
+        "arguments": {
+          "command": "object.move",
+          "params": {
+            "ids": [
+              5
+            ],
+            "dx": 5.0,
+            "dy": 2.75
+          }
+        },
+        "preview": "preview-02.png",
+        "accepted": true,
+        "vision_priority": {
+          "index": 0,
+          "logits": {
+            "A": 25.049236297607422,
+            "B": 24.419918060302734
+          },
+          "model": "smolvlm2-500m-artcraft",
+          "seconds": 2.06,
+          "options": [
+            "position",
+            "stroke"
+          ]
+        },
+        "vision_comparison": {
+          "index": 1,
+          "logits": {
+            "A": 22.717710494995117,
+            "B": 23.23041343688965
+          },
+          "model": "smolvlm2-500m-artcraft",
+          "seconds": 2.93
+        },
+        "reference_ssim": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      },
+      {
+        "issue": "stroke",
+        "before": {
+          "color": 0.0,
+          "position": 0.0,
+          "stroke": 3.0
+        },
+        "after": {
+          "color": 0.0,
+          "position": 0.0,
+          "stroke": 0.0
+        },
+        "protected": true,
+        "tool": "set_paint",
+        "arguments": {
+          "ids": [
+            5
+          ],
+          "stroke": "#102030",
+          "strokeWidth": 3
+        },
+        "preview": "preview-03.png",
+        "accepted": true,
+        "vision_comparison": {
+          "index": 1,
+          "logits": {
+            "A": 22.572900772094727,
+            "B": 23.105649948120117
+          },
+          "model": "smolvlm2-500m-artcraft",
+          "seconds": 2.92
+        },
+        "reference_ssim": {
+          "before": 1.0,
+          "after": 1.0
+        }
+      }
+    ],
+    "best_preview": "preview-03.png",
+    "best_native": "checkpoint-03.vectorcraft",
+    "derived_target_rgb": [
+      66.0,
+      202.0,
+      216.0
+    ],
+    "reference_preview": "reference.png",
+    "vision_model_load_seconds": 0.32,
+    "stop": "target_met"
+  },
+  "engine": "vectorcraft",
+  "outputs": {
+    "after.svg": {
+      "sha256": "f0dbe627adde8613eb5adda486830fe3f074bc29d2906bc1168cd4082f161187",
+      "bytes": 938
+    },
+    "after.png": {
+      "sha256": "2035530b80425102f9242e0e8abecd7ef44a646084d8928c1e0db094380ed85c",
+      "bytes": 3037,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    },
+    "reopened.png": {
+      "sha256": "2035530b80425102f9242e0e8abecd7ef44a646084d8928c1e0db094380ed85c",
+      "bytes": 3037,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    },
+    "editable.vectorcraft": {
+      "sha256": "9b09cf48d7718930b2af75cfe40e983c92c1c8ae0fccabc9f707ea09bd41aed8",
+      "bytes": 33618
+    },
+    "format.pdf": {
+      "sha256": "f1344ced2e6f080b5825945988690a3a6ab086d00043934bc8205341beeac78f",
+      "bytes": 5060
+    },
+    "format-pdf.png": {
+      "sha256": "be5e2f2c9eb27475efbb4bf754de82eb934f2f138e1422316a1d2b21847cc70a",
+      "bytes": 3039,
+      "size": [
+        96,
+        96
+      ],
+      "mode": "RGBA"
+    }
+  },
+  "source": null,
+  "native_roundtrip": true,
+  "actions_url": "https://github.com/koda24-cell/koda24-cell-illustration-ai-studio/actions/runs/46090533977",
+  "approval": "pending",
+  "editable": "editable.vectorcraft"
+}
