@@ -1,0 +1,209 @@
+{
+  "engine": "vectorcraft",
+  "public_test_fixture": true,
+  "expected": [
+    "after.svg",
+    "after.png",
+    "reopened.png",
+    "editable.vectorcraft"
+  ],
+  "operations": [
+    {
+      "name": "run_command",
+      "arguments": {
+        "command": "file.new",
+        "params": {
+          "width": 192,
+          "height": 56
+        }
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M7 9L16 3H176L185 9V47L176 53H16L7 47Z",
+        "fill": "#80603c",
+        "stroke": "none",
+        "name": "Outer silhouette"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M9 10L17 5H175L183 10V46L175 51H17L9 46Z",
+        "fill": "#e3c990",
+        "stroke": "none",
+        "name": "Gold rim"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M11 11L18 7H174L181 11V45L174 49H18L11 45Z",
+        "fill": "#1b3041",
+        "stroke": "none",
+        "name": "Face"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M12 12L19 8H173L180 12V24Q96 15 12 24Z",
+        "fill": "#354c57",
+        "stroke": "none",
+        "name": "Upper sheen"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M12 44L19 48H173L180 44V37Q96 43 12 37Z",
+        "fill": "#101b2b",
+        "stroke": "none",
+        "name": "Lower shade"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M25 13H65L60 14H25L22 17Z M167 13H127L132 14H167L170 17Z M25 43H65L60 42H25L22 39Z M167 43H127L132 42H167L170 39Z",
+        "fill": "#bf9d61",
+        "stroke": "none",
+        "name": "Fine corner lines"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M14 20Q23 7 37 10Q27 12 23 18L18 23Z M178 20Q169 7 155 10Q165 12 169 18L174 23Z M14 36Q23 49 37 46Q27 44 23 38L18 33Z M178 36Q169 49 155 46Q165 44 169 38L174 33Z",
+        "fill": "#d7b77c",
+        "stroke": "none",
+        "name": "Filigree"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M12 28L18 18L24 28L18 38Z M168 28L174 18L180 28L174 38Z",
+        "fill": "#a88751",
+        "stroke": "none",
+        "name": "Gem sockets"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M14 28L18 22L22 28L18 34Z",
+        "fill": "#356e70",
+        "stroke": "none",
+        "name": "Accent"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M170 28L174 22L178 28L174 34Z",
+        "fill": "#75b6ae",
+        "stroke": "none",
+        "name": "Right gem"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M15 25L18 22L19 26L17 27Z M171 25L174 22L175 26L173 27Z",
+        "fill": "#e4e9ce",
+        "stroke": "none",
+        "name": "Gem glints"
+      }
+    },
+    {
+      "name": "draw_path",
+      "arguments": {
+        "d": "M90 7L96 3L102 7L96 9Z M90 49L96 47L102 49L96 53Z",
+        "fill": "#e3c990",
+        "stroke": "none",
+        "name": "Center crest"
+      }
+    },
+    {
+      "name": "inspect_document",
+      "arguments": {}
+    },
+    {
+      "name": "save_file",
+      "arguments": {
+        "path": "editable.vectorcraft"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "after.svg"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "after.png"
+      }
+    },
+    {
+      "name": "open_file",
+      "arguments": {
+        "path": "editable.vectorcraft"
+      }
+    },
+    {
+      "name": "export",
+      "arguments": {
+        "path": "reopened.png"
+      }
+    }
+  ],
+  "quality_before": 14,
+  "quality_goal": {
+    "sample": [
+      17,
+      28,
+      19,
+      30
+    ],
+    "object": "Accent",
+    "protected": [
+      [
+        35,
+        18,
+        155,
+        38
+      ],
+      [
+        0,
+        0,
+        6,
+        6
+      ],
+      [
+        182,
+        0,
+        192,
+        6
+      ]
+    ],
+    "reference": {
+      "sample": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "swatch_fixture": "#75b6ae"
+    },
+    "stroke": {
+      "width": 1.5,
+      "color": "#d7b77c"
+    },
+    "intent": "Refine the left turquoise gemstone to match the right gemstone and gold outline; preserve the center label area, external silhouette, and transparency. Subtle antique gold and midnight blue fantasy RPG command button.",
+    "vision_review": true
+  }
+}
